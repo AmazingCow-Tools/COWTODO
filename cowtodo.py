@@ -40,7 +40,6 @@ for root, dirs, files in os.walk('.'):
         dirs.remove(dirs[0]);
 
     dirs_scanned_count += 1;
-
     #For each file check if it matches with
     #our file extensions.
     for file in files:
@@ -93,7 +92,7 @@ for tag in tags_matching_dict:
         text = text.lstrip("#").lstrip("/").lstrip(":").lstrip(" ");
 
         print " {} ({}) - {}".format(
-            colored(file, "red"),
+            colored(file, "yellow"),
             colored(line, "blue"),
             colored(text, "green"));
 
