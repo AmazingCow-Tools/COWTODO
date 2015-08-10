@@ -1,106 +1,195 @@
 #!/usr/bin/python
-
+#coding=utf8
+##----------------------------------------------------------------------------##
+##               █      █                                                     ##
+##               ████████                                                     ##
+##             ██        ██                                                   ##
+##            ███  █  █  ███                                                  ##
+##            █ █        █ █                                                  ##
+##             ████████████         applepy.py - ApplePy                      ##
+##           █              █       Copyright (c) 2015 AmazingCow             ##
+##          █     █    █     █      www.AmazingCow.com                        ##
+##          █     █    █     █                                                ##
+##           █              █       N2OMatt - n2omatt@amazingcow.com          ##
+##             ████████████         www.amazingcow.com/n2omatt                ##
+##                                                                            ##
+##                                                                            ##
+##                  This software is licensed as GPLv3                        ##
+##                 CHECK THE COPYING FILE TO MORE DETAILS                     ##
+##                                                                            ##
+##    Permission is granted to anyone to use this software for any purpose,   ##
+##   including commercial applications, and to alter it and redistribute it   ##
+##               freely, subject to the following restrictions:               ##
+##                                                                            ##
+##     0. You **CANNOT** change the type of the license.                      ##
+##     1. The origin of this software must not be misrepresented;             ##
+##        you must not claim that you wrote the original software.            ##
+##     2. If you use this software in a product, an acknowledgment in the     ##
+##        product IS HIGHLY APPRECIATED, both in source and binary forms.     ##
+##        (See opensource.AmazingCow.com/acknowledgment.html for details).    ##
+##        If you will not acknowledge, just send us a email. We'll be         ##
+##        *VERY* happy to see our work being used by other people. :)         ##
+##        The email is: acknowledgmentopensource@AmazingCow.com               ##
+##     3. Altered source versions must be plainly marked as such,             ##
+##        and must notbe misrepresented as being the original software.       ##
+##     4. This notice may not be removed or altered from any source           ##
+##        distribution.                                                       ##
+##     5. Most important, you must have fun. ;)                               ##
+##                                                                            ##
+##      Visit opensource.amazingcow.com for more open-source projects.        ##
+##                                                                            ##
+##                                  Enjoy :)                                  ##
+##----------------------------------------------------------------------------##
 ## Imports ##
 import os
-from os.path import join, getsize
-from pprint import pprint
-import re;
-from termcolor import colored;
+import os.path;
 import time;
+import re;
+from pprint import pprint
+import termcolor;
 
-extensions = [".py",         #python
-              ".h", ".c",    #C
-              ".cpp",        #C++
-              ".m", ".mm",   #ObjC
-              ".js", ".jsx", #Javascript
-              ".php",        #PHP
-              ];
+################################################################################
+## Globals                                                                    ##
+################################################################################
+class Globals:
+    extensions = [".py",          #python
+                  ".h", ".c",     #C
+                  ".cpp",         #C++
+                  ".m", ".mm",    #ObjC
+                  ".js", ".jsx",  #Javascript
+                  ".php",         #PHP
+                  ".htm", ".html" #html
+                  ];
 
-tag_names = ["COWTODO",
-             "COWFIX",
-             "COWHACK"];
+    tag_names      = ["COWTODO", "COWFIX", "COWHACK"];
+    this_file_name = "cowtodo.py";
+    tag_entries    = {
+        "COWTODO" : [],
+        "COWHACK" : [],
+        "COWFIX"  : []
+    }
 
-this_file_name = "cowtodo.py";
+################################################################################
+## Helper                                                                     ##
+################################################################################
+class Helper:
+    @staticmethod
+    def print_help():
+        pass;
+    
+    @staticmethod
+    def print_version():
+        pass;
 
-selected_files     = [];
-tags_matching_dict = {};
+    @staticmethod    
+    def clean_str(s, tag):
+        s = s.replace(tag, "");
+        s = s.rstrip(" ").lstrip(" ");
+        s = s.lstrip("#").lstrip("/");
+        s = s.lstrip(":").lstrip(" ");
+        s = s.rstrip("\n");
+        return s;
 
-dirs_scanned_count   = 0;
-files_scanned_count  = 0;
-files_selected_count = 0;
-time_begin = time.clock();
+    @staticmethod
+    def colored( msg, color):
+        return termcolor.colored(msg, color);
+    
+    @staticmethod
+    def print_output(*args):
+        print "".join(map(str,args)),
 
-for tag_name in tag_names:
-    tags_matching_dict[tag_name] = [];
-
-## Scan the directories.
-for root, dirs, files in os.walk('.'):
-    #Ignore hidden dirs.
-    if(len(dirs) > 0 and dirs[0][0] == "."):
-        dirs.remove(dirs[0]);
-
-    dirs_scanned_count += 1;
-    #For each file check if it matches with
-    #our file extensions.
-    for file in files:
-        if(file == this_file_name):
-            continue;
-
-        files_scanned_count += 1;
-
-        for ext in extensions:
-            filename, fileext = os.path.splitext(file);
-            if(ext == fileext):
-                files_selected_count += 1;
-                #Match, so put the file in the selected files
-                #to we examinate it later.
-                selected_files.append(os.path.join(root, file));
+################################################################################
+## Tag Entry                                                                  ##
+################################################################################
+class TagEntry:
+    def __init__(self, filename):
+        self.filename = filename;
+        self.data     = {};
+    
+    def add(self, tag_type, line_no, line_str):
+        #Check if we already added something in this tag.
+        if(tag_type not in self.data):
+            self.data[tag_type] = [];            
+        self.data[tag_type].append([line_no, line_str]);
 
 
-## Scan is complete, so now start check
-## if the selected files has our tags.
-for filename in selected_files:
-    #Open the file and check each line of it.
+################################################################################
+## Scan/Parse Functions                                                       ##
+################################################################################
+def scan(start_path):
+    ## Scan the directories.
+    for root, dirs, files in os.walk(start_path):
+        #Ignore hidden dirs.
+        if(len(dirs) > 0 and dirs[0][0] == "."):
+            dirs.remove(dirs[0]);
+
+        #For each file check if it matches with our file extensions.
+        for file in files:
+            #We found this file. Ignore it :)
+            if(file == Globals.this_file_name):
+                continue;
+
+            for ext in Globals.extensions:
+                #Get the filename and its extension.
+                filename, fileext = os.path.splitext(file);
+                #Extension matches.
+                if(fileext == ext):
+                    #Parse the file to get all tags.
+                    parse(os.path.join(root, file));
+
+def parse(filename):
+    tag_entry = TagEntry(filename);    
+    
+    #Open the file and get the lines.
     lines = open(filename).readlines();
-
+    #For all lines.
     for line_no in xrange(0, len(lines)):
         line = lines[line_no];
+        
         #Check if any tag was found.
-        for tag_name in tag_names:
-            search_str = ".*%s.*" %(tag_name);
-
+        for tag_name in Globals.tag_names:
+            search_str = ".*%s.*" %(tag_name); #Build a regex
             if(re.search(search_str, line) is not None):
-                data = [filename, line_no, line];
-                tags_matching_dict[tag_name].append(data);
+                clean_line = Helper.clean_str(line, tag_name);
+                tag_entry.add(tag_name, line_no, clean_line);
                 break;
 
+    for tag_name in tag_entry.data.keys():
+        Globals.tag_entries[tag_name].append(tag_entry);
 
-## We found all tags so now format it.
-# pprint(tags_matching_dict);
-for tag in tags_matching_dict:
-    length = len(tags_matching_dict[tag]);
-    if(length == 0):
-        continue;
+################################################################################
+## Output Functions                                                           ##
+################################################################################
+def output_log():
+    for tag_name in Globals.tag_names:
+        tag_list     = Globals.tag_entries[tag_name];        
+        tag_list_len = len(tag_list);
+        if(tag_list_len == 0):
+            continue;
 
-    print "{}({}):".format(
-        colored(tag, "cyan"),
-        colored(length, "blue"));
-    for info in tags_matching_dict[tag]:
-        file = info[0];
-        line = info[1];
-        text = info[2].rstrip(" ").lstrip(" ").replace(tag, "").replace("\n", "");
-        text = text.lstrip("#").lstrip("/").lstrip(":").lstrip(" ");
+        print "{} - Files({})".format(Helper.colored(tag_name, "red"), 
+                                      Helper.colored(tag_list_len, "cyan"));
 
-        print " {} ({}) - {}".format(
-            colored(file, "yellow"),
-            colored(line, "blue"),
-            colored(text, "green"));
+        for entry in tag_list:
+            entry_data     = entry.data[tag_name];
+            entry_data_len = len(entry_data);
 
-time_end = time.clock();
-print;
-print "Directories Scanned:", dirs_scanned_count;
-print "Files Scanned:      ", files_scanned_count;
-print "Files Selected:     ", files_selected_count;
-print "Elapsed:            ", time_end - time_begin;
-print;
-# pprint(tags_matching_dict);
+            print "{} - Issues({}):".format(Helper.colored(entry.filename, "yellow"),
+                                             Helper.colored(entry_data_len, "cyan"));
+
+            for entry_info in entry_data:
+                print "\t ({}) {}".format(Helper.colored(entry_info[0], "cyan"),
+                                          Helper.colored(entry_info[1], "green"));
+
+def output_short():
+    pass;
+
+################################################################################
+## Script Initialization                                                      ##
+################################################################################
+def main():
+    scan(".");
+    output_log();
+
+if(__name__ == "__main__"):
+    main();
