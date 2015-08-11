@@ -6,7 +6,7 @@
 ##             ██        ██                                                   ##
 ##            ███  █  █  ███                                                  ##
 ##            █ █        █ █                                                  ##
-##             ████████████         applepy.py - ApplePy                      ##
+##             ████████████         cowtodo.py - COWTODO                      ##
 ##           █              █       Copyright (c) 2015 AmazingCow             ##
 ##          █     █    █     █      www.AmazingCow.com                        ##
 ##          █     █    █     █                                                ##
@@ -47,6 +47,16 @@ import time;
 import re;
 from pprint import pprint
 import termcolor;
+
+
+################################################################################
+## Globals                                                                    ##
+################################################################################
+class Constants:
+    COLOR_FILE   = "yellow";
+    COLOR_ISSUE  = "green";
+    COLOR_NUMBER = "cyan";
+    COLOR_TAG    = "red";
 
 ################################################################################
 ## Globals                                                                    ##
@@ -160,36 +170,48 @@ def parse(filename):
 ################################################################################
 ## Output Functions                                                           ##
 ################################################################################
-def output_log():
+def output_long():
+    #Output the messages for all tag names.
     for tag_name in Globals.tag_names:
-        tag_list     = Globals.tag_entries[tag_name];        
-        tag_list_len = len(tag_list);
-        if(tag_list_len == 0):
+        #Get the list of entries for this tag.
+        tag_entry_list     = Globals.tag_entries[tag_name];        
+        tag_entry_list_len = len(tag_entry_list);
+        if(tag_entry_list_len == 0): #Have nothing to show.
             continue;
 
-        print "{} - Files({})".format(Helper.colored(tag_name, "red"), 
-                                      Helper.colored(tag_list_len, "cyan"));
+        #Print the Tag name and count of files with it.
+        out = "{} - Files({})";
+        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG), 
+                         Helper.colored(tag_entry_list_len, Constants.COLOR_NUMBER));
+        print out;
 
-        for entry in tag_list:
+        #For eatch entry for this tag.
+        for entry in tag_entry_list:
             entry_data     = entry.data[tag_name];
             entry_data_len = len(entry_data);
 
-            print "{} - Issues({}):".format(Helper.colored(entry.filename, "yellow"),
-                                             Helper.colored(entry_data_len, "cyan"));
+            #Print the file name and the count of issues.
+            out = "{} - Issues({}):";
+            out = out.format(Helper.colored(entry.filename, Constants.COLOR_FILE),
+                             Helper.colored(entry_data_len, Constants.COLOR_NUMBER));
+            print out;
 
             for entry_info in entry_data:
-                print "\t ({}) {}".format(Helper.colored(entry_info[0], "cyan"),
-                                          Helper.colored(entry_info[1], "green"));
+                #Print the line of issue and its message.
+                out = "\t ({}) {}";
+                out = out.format(Helper.colored(entry_info[0], Constants.COLOR_NUMBER),
+                                 Helper.colored(entry_info[1], Constants.COLOR_ISSUE));
+                print out;
 
 def output_short():
-    pass;
+    
 
 ################################################################################
 ## Script Initialization                                                      ##
 ################################################################################
 def main():
     scan(".");
-    output_log();
+    output_long();
 
 if(__name__ == "__main__"):
     main();
