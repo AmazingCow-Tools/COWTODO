@@ -50,7 +50,7 @@ import termcolor;
 
 
 ################################################################################
-## Globals                                                                    ##
+## Constants                                                                  ##
 ################################################################################
 class Constants:
     COLOR_FILE   = "yellow";
@@ -185,7 +185,7 @@ def output_long():
                          Helper.colored(tag_entry_list_len, Constants.COLOR_NUMBER));
         print out;
 
-        #For eatch entry for this tag.
+        #For each entry for this tag.
         for entry in tag_entry_list:
             entry_data     = entry.data[tag_name];
             entry_data_len = len(entry_data);
