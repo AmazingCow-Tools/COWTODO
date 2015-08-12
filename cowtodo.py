@@ -45,18 +45,39 @@ import os
 import os.path;
 import time;
 import re;
-from pprint import pprint
 import termcolor;
-
+import getopt;
+import sys;
 
 ################################################################################
 ## Constants                                                                  ##
 ################################################################################
 class Constants:
-    COLOR_FILE   = "yellow";
-    COLOR_ISSUE  = "green";
-    COLOR_NUMBER = "cyan";
-    COLOR_TAG    = "red";
+    #Color.
+    COLOR_FILE          = "yellow";
+    COLOR_ISSUE         = "green";
+    COLOR_NUMBER        = "cyan";
+    COLOR_TAG           = "red";
+    COLOR_VERBOSE_TITLE = "blue";
+    COLOR_VERBOSE_MSG   = "magenta";
+
+    #App
+    APP_NAME      = "cowtodo";
+    APP_VERSION   = "0.1";
+    APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
+    APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
+                               "This is a free software (GPLv3) - Share/Hack it",
+                               "Check opensource.amazingcow.com for more :)"));
+
+    #FLags
+    FLAG_HELP    = "h", "help";
+    FLAG_VERSION = "v", "version";
+    FLAG_SHORT   = "s", "short";
+    FLAG_LONG    = "l", "long";
+    FLAG_VERBOSE = "V", "verbose";
+
+    FLAGS_SHORT = "hvslV";
+    FLAGS_LONG  = ["help", "version", "short", "long", "verbose"];
 
 ################################################################################
 ## Globals                                                                    ##
@@ -78,6 +99,7 @@ class Globals:
         "COWHACK" : [],
         "COWFIX"  : []
     }
+    verbose        = False;
 
 ################################################################################
 ## Helper                                                                     ##
@@ -85,11 +107,39 @@ class Globals:
 class Helper:
     @staticmethod
     def print_help():
-        pass;
+        print "Usage:";
+        print "  cowtodo [-hv] [-sl] <path>";
+        print;
+        print "  -h --help    : Show this screen.";
+        print "  -v --version : Show app version and copyright.";
+        print "  -s --short   : Output the short listing.";
+        print "  -l --long    : Output the long listing. (Default)";
+        print "  -v --verbose : Verbose mode, helps to see what it's doing";
+        print;
+        print "  Note: If <path> is blank the current dir is assumed.";
+        print;
+
     
     @staticmethod
     def print_version():
-        pass;
+        print "{} - {} - {}".format(Constants.APP_NAME,
+                                    Constants.APP_VERSION,
+                                    Constants.APP_AUTHOR);
+        print Constants.APP_COPYRIGHT;
+        print;
+
+    @staticmethod
+    def colored(msg, color):
+        return termcolor.colored(msg, color);
+    
+    @staticmethod
+    def print_output(*args):
+        print "".join(map(str,args)),
+
+    @staticmethod
+    def print_verbose(*args):
+        if(Globals.verbose):
+            print " ".join(map(str,args));
 
     @staticmethod    
     def clean_str(s, tag):
@@ -99,14 +149,6 @@ class Helper:
         s = s.lstrip(":").lstrip(" ");
         s = s.rstrip("\n");
         return s;
-
-    @staticmethod
-    def colored( msg, color):
-        return termcolor.colored(msg, color);
-    
-    @staticmethod
-    def print_output(*args):
-        print "".join(map(str,args)),
 
 ################################################################################
 ## Tag Entry                                                                  ##
@@ -133,6 +175,9 @@ def scan(start_path):
         if(len(dirs) > 0 and dirs[0][0] == "."):
             dirs.remove(dirs[0]);
 
+        Helper.print_verbose(Helper.colored("Scanning:", Constants.COLOR_VERBOSE_TITLE),
+                             Helper.colored(root, Constants.COLOR_VERBOSE_MSG));
+
         #For each file check if it matches with our file extensions.
         for file in files:
             #We found this file. Ignore it :)
@@ -144,6 +189,10 @@ def scan(start_path):
                 filename, fileext = os.path.splitext(file);
                 #Extension matches.
                 if(fileext == ext):
+                    Helper.print_verbose(
+                             Helper.colored("\tParsing:", Constants.COLOR_VERBOSE_TITLE),
+                             Helper.colored(file, Constants.COLOR_VERBOSE_MSG));
+
                     #Parse the file to get all tags.
                     parse(os.path.join(root, file));
 
@@ -204,14 +253,87 @@ def output_long():
                 print out;
 
 def output_short():
-    
+    #Output the messages for all tag names.
+    for tag_name in Globals.tag_names:
+        #Get the list of entries for this tag.
+        tag_entry_list     = Globals.tag_entries[tag_name];        
+        tag_entry_list_len = len(tag_entry_list);
+        if(tag_entry_list_len == 0): #Have nothing to show.
+            continue;
+
+        #Print the Tag name and count of files with it.
+        out = "{} - Files({})";
+        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG), 
+                         Helper.colored(tag_entry_list_len, Constants.COLOR_NUMBER));
+        print out;
+
+        #For each entry for this tag.
+        for entry in tag_entry_list:
+            entry_data     = entry.data[tag_name];
+            entry_data_len = len(entry_data);
+
+            for entry_info in entry_data:
+                #Print the line of issue and its message.
+                out = "{} - ({}) {}";
+                out = out.format(Helper.colored(entry.filename,Constants.COLOR_FILE),
+                                 Helper.colored(entry_info[0], Constants.COLOR_NUMBER),
+                                 Helper.colored(entry_info[1], Constants.COLOR_ISSUE));
+                print out;
+
 
 ################################################################################
 ## Script Initialization                                                      ##
 ################################################################################
 def main():
-    scan(".");
-    output_long();
+    #Get the command line options.
+    options = getopt.gnu_getopt(sys.argv[1:], 
+                                Constants.FLAGS_SHORT,
+                                Constants.FLAGS_LONG);
+
+    #Optiongs switches.
+    help_resquested   = False;
+    version_requested = False;
+    long_requested    = False;
+    short_requested   = False;
+    verbose_requested = False;
+
+    #Parse the options.
+    for option in options[0]:
+        key, value = option;
+        key = key.lstrip("-");
+
+        #Check if flags are present.
+        if  (key in Constants.FLAG_HELP):    help_resquested   = True;
+        elif(key in Constants.FLAG_VERSION): version_requested = True;
+        elif(key in Constants.FLAG_LONG):    long_requested    = True;
+        elif(key in Constants.FLAG_SHORT):   short_requested   = True;
+        elif(key in Constants.FLAG_VERBOSE): verbose_requested = True;
+
+    #Check if the exclusive operations are requested.
+    if(help_resquested):
+        Helper.print_help();
+        exit(0);
+    if(version_requested):
+        Helper.print_version();
+        exit(0);
+
+    #Set the output function based upon the flag.
+    output_f = output_long;
+    if(short_requested): output_f = output_short;
+    if(long_requested):  output_f = output_long;
+
+    #Check if the path is present.
+    path = ".";
+    if(len(options[1]) > 0):
+        path = options[1][0];
+    
+    #Set the verbose flag.
+    Globals.verbose = verbose_requested;
+
+    #Do a scan and present the results.
+    scan(path);
+    Helper.print_verbose("\n\n");
+    output_f();
 
 if(__name__ == "__main__"):
     main();
