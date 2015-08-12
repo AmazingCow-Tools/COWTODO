@@ -1,0 +1,6 @@
+#1 - Check if the output is a terminal, if not does not put color.
+#2 - Add an option to specify more tags if needed.
+#3 - Better error checking.
+#4 - Refactor the issues output methods.
+#5 - Output to a sql statements, xml, json etc.
+#6 - Make a setup file.

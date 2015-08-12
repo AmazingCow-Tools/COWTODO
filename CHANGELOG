@@ -1,0 +1,6 @@
+version 0.1:
+[Aug 11 2015] - Finish the basic implementation.
+                The cowtodo can search in specified folders,
+                print in Long and Short modes and have a 
+                verbose mode that shows every scan and parse.
+                
