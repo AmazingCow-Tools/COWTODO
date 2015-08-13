@@ -4,3 +4,8 @@ version 0.1:
                 print in Long and Short modes and have a 
                 verbose mode that shows every scan and parse.
                 
+version 0.1.1:
+[Aug 13 2015] - Partialy adresses the TODO#7, we are now able
+                to specify the exclude paths.
+                NOTE: We didn't test this release too much.                
+

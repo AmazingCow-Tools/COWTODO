@@ -54,12 +54,14 @@ import sys;
 ################################################################################
 class Constants:
     #Color.
-    COLOR_FILE          = "yellow";
-    COLOR_ISSUE         = "green";
-    COLOR_NUMBER        = "cyan";
-    COLOR_TAG           = "red";
-    COLOR_VERBOSE_TITLE = "blue";
-    COLOR_VERBOSE_MSG   = "magenta";
+    COLOR_FILE                 = "yellow";
+    COLOR_ISSUE                = "green";
+    COLOR_NUMBER               = "cyan";
+    COLOR_TAG                  = "red";
+    COLOR_VERBOSE_TITLE        = "blue";
+    COLOR_VERBOSE_MSG          = "magenta";
+    COLOR_VERBOSE_IGNORE_TITLE = "red";
+    COLOR_VERBOSE_IGNORE_MSG   = "yellow";
 
     #App
     APP_NAME      = "cowtodo";
@@ -75,9 +77,10 @@ class Constants:
     FLAG_SHORT   = "s", "short";
     FLAG_LONG    = "l", "long";
     FLAG_VERBOSE = "V", "verbose";
+    FLAG_EXCLUDE = "e", "exclude";
 
-    FLAGS_SHORT = "hvslV";
-    FLAGS_LONG  = ["help", "version", "short", "long", "verbose"];
+    FLAGS_SHORT = "hvslVe:";
+    FLAGS_LONG  = ["help", "version", "short", "long", "verbose", "exclude="];
 
 ################################################################################
 ## Globals                                                                    ##
@@ -100,6 +103,7 @@ class Globals:
         "COWFIX"  : []
     }
     verbose        = False;
+    exclude_dirs   = [];
 
 ################################################################################
 ## Helper                                                                     ##
@@ -108,15 +112,17 @@ class Helper:
     @staticmethod
     def print_help():
         print "Usage:";
-        print "  cowtodo [-hv] [-sl] <path>";
+        print "  cowtodo [-hv] [-sl] [-e <path>] <search_path>";
         print;
         print "  -h --help    : Show this screen.";
         print "  -v --version : Show app version and copyright.";
         print "  -s --short   : Output the short listing.";
         print "  -l --long    : Output the long listing. (Default)";
         print "  -v --verbose : Verbose mode, helps to see what it's doing";
+        print "  -e --exclude <path> : Exclude the path from scan.";
         print;
-        print "  Note: If <path> is blank the current dir is assumed.";
+        print "  Note: If <search_path> is blank the current dir is assumed.";
+        print "        Mutiple --exclude <path> can be added.";
         print;
 
     
@@ -170,11 +176,29 @@ class TagEntry:
 ################################################################################
 def scan(start_path):
     ## Scan the directories.
-    for root, dirs, files in os.walk(start_path):
-        #Ignore hidden dirs.
-        if(len(dirs) > 0 and dirs[0][0] == "."):
-            dirs.remove(dirs[0]);
+    for root, dirs, files in os.walk(start_path, topdown=True):
 
+        #Check if current root path is in our exclude list of if it is hidden.
+        is_in_exclude_list = os.path.abspath(root) in Globals.exclude_dirs;
+        is_hidden          = "." in os.path.split(root)[1] and len(root) != 1;
+
+        if(is_in_exclude_list or is_hidden):
+            #Log if verbose.
+            Helper.print_verbose(
+                Helper.colored("Ignoring:", Constants.COLOR_VERBOSE_IGNORE_TITLE),
+                Helper.colored(root, Constants.COLOR_VERBOSE_IGNORE_MSG));
+            
+            #Remove the os.walk dirs.
+            dirs[:] = [];
+
+            #Remove the path from the exclude paths since we're already hit it.
+            #So it will be perform better because we gonna search a lot of dirs
+            #without test a path that makes no sense anymore.
+            if(is_in_exclude_list):                
+                Globals.exclude_dirs.remove(os.path.abspath(root));
+
+            continue; #Skip the rest of for block.
+        
         Helper.print_verbose(Helper.colored("Scanning:", Constants.COLOR_VERBOSE_TITLE),
                              Helper.colored(root, Constants.COLOR_VERBOSE_MSG));
 
@@ -308,6 +332,11 @@ def main():
         elif(key in Constants.FLAG_LONG):    long_requested    = True;
         elif(key in Constants.FLAG_SHORT):   short_requested   = True;
         elif(key in Constants.FLAG_VERBOSE): verbose_requested = True;
+        elif(key in Constants.FLAG_EXCLUDE):
+            path = os.path.expanduser(value);
+            path = os.path.abspath(path);
+            if(os.path.isdir(path)):
+                Globals.exclude_dirs.append(path);
 
     #Check if the exclusive operations are requested.
     if(help_resquested):

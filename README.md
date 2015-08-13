@@ -10,14 +10,16 @@ Search specific tags in our source code and print in a formated way.
 
 ## Usage:
 ```
- cowtodo [-hv] [-sl] <path>
-     -h --help    : Show this screen.
-     -v --version : Show app version and copyright.
-     -s --short   : Output the short listing.
-     -l --long    : Output the long listing. (Default)
-     -v --verbose : Verbose mode, helps to see what it's doing
+ cowtodo [-hv] [-sl] [-e <path>] <search_path>
+   -h --help    : Show this screen.
+   -v --version : Show app version and copyright.
+   -s --short   : Output the short listing.
+   -l --long    : Output the long listing. (Default)
+   -v --verbose : Verbose mode, helps to see what it's doing
+   -e --exclude <path> : Exclude the path from scan.
 ```
-Path is assumed to be de current directory (```./``` ) if any is specified.
+Search path is assumed to be de current directory (```./``` ) if any is specified.  
+Mutiple exclude paths can be passed.
 
 ## License:
 This software is released under GPLv3.
