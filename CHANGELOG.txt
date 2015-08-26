@@ -1,11 +1,16 @@
 version 0.1:
 [Aug 11 2015] - Finish the basic implementation.
                 The cowtodo can search in specified folders,
-                print in Long and Short modes and have a 
+                print in Long and Short modes and have a
                 verbose mode that shows every scan and parse.
-                
-version 0.1.1:
-[Aug 13 2015] - Partialy adresses the TODO#7, we are now able
-                to specify the exclude paths.
-                NOTE: We didn't test this release too much.                
 
+version 0.1.1:
+[Aug 13 2015] - Partially addresses the TODO#7, we are now able
+                to specify the exclude paths.
+                NOTE: We didn't test this release too much.
+
+version 0.1.2:
+[Aug 26 2015] - Complete the TODO#7 and TODO#8, we are now able to specify
+                the paths to add or remove permanently in the
+                rc file. So all cowtodos calls will ignore those
+                paths.

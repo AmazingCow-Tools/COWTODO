@@ -4,5 +4,5 @@
 #4 - Refactor the issues output methods.
 #5 - Output to a sql statements, xml, json etc.
 #6 - Make a setup file.
-[PARTIALY DONE]#7 - Add options to specify excluded dirs. [file | cmd line]
-#8 - Add a rc file with config.
+[DONE]#7 - Add options to specify excluded dirs. [file | cmd line]
+[DONE]#8 - Add a rc file with config.

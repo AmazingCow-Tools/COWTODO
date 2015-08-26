@@ -65,22 +65,39 @@ class Constants:
 
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.1";
+    APP_VERSION   = "0.1.2";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
                                "Check opensource.amazingcow.com for more :)"));
 
     #FLags
-    FLAG_HELP    = "h", "help";
-    FLAG_VERSION = "v", "version";
-    FLAG_SHORT   = "s", "short";
-    FLAG_LONG    = "l", "long";
-    FLAG_VERBOSE = "V", "verbose";
-    FLAG_EXCLUDE = "e", "exclude";
+    FLAG_HELP               = "h", "help";
+    FLAG_VERSION            = "v", "version";
+    FLAG_SHORT              = "s", "short";
+    FLAG_LONG               = "l", "long";
+    FLAG_VERBOSE            = "V", "verbose";
+    FLAG_EXCLUDE            = "e", "exclude";
+    FLAG_ADD_EXCLUDE_DIR    = "add-exclude-dir";
+    FLAG_REMOVE_EXCLUDE_DIR = "remove-exclude-dir";
+    FLAG_LIST_EXCLUDE_DIR   = "list-exclude-dir";
 
     FLAGS_SHORT = "hvslVe:";
-    FLAGS_LONG  = ["help", "version", "short", "long", "verbose", "exclude="];
+    FLAGS_LONG  = ["help",
+                   "version",
+                   "short",
+                   "long",
+                   "verbose",
+                   "exclude=",
+                   "add-exclude-dir=",
+                   "remove-exclude-dir=",
+                   "list-exclude-dir",
+                   ];
+
+    #Exclude Dir RC Paths.
+    RC_DIR_PATH  = os.path.expanduser("~/.cowtodorc");
+    RC_FILE_PATH = os.path.join(RC_DIR_PATH,"cowtodorc.txt");
+
 
 ################################################################################
 ## Globals                                                                    ##
@@ -102,8 +119,10 @@ class Globals:
         "COWHACK" : [],
         "COWFIX"  : []
     }
-    verbose        = False;
-    exclude_dirs   = [];
+    verbose                       = False;
+    exclude_dirs                  = [];
+    paths_to_add_in_exclude_rc    = [];
+    paths_to_remove_in_exclude_rc = [];
 
 ################################################################################
 ## Helper                                                                     ##
@@ -111,20 +130,34 @@ class Globals:
 class Helper:
     @staticmethod
     def print_help():
-        print "Usage:";
-        print "  cowtodo [-hv] [-sl] [-e <path>] <search_path>";
-        print;
-        print "  -h --help    : Show this screen.";
-        print "  -v --version : Show app version and copyright.";
-        print "  -s --short   : Output the short listing.";
-        print "  -l --long    : Output the long listing. (Default)";
-        print "  -v --verbose : Verbose mode, helps to see what it's doing";
-        print "  -e --exclude <path> : Exclude the path from scan.";
-        print;
-        print "  Note: If <search_path> is blank the current dir is assumed.";
-        print "        Mutiple --exclude <path> can be added.";
-        print;
+        msg = "Usage:" +"""
+  cowtodo [-hv] [-sl] [-e <path>] <search_path>
+  cowtodo [--list-exclude-dir]
+  cowtodo [--add-exclude-dir|remove-exclude-dir] <path>
 
+Options:
+ *-h --help           : Show this screen.
+ *-v --version        : Show app version and copyright.
+  -s --short          : Output the short listing.
+  -l --long           : Output the long listing. (Default)
+  -v --verbose        : Verbose mode, helps to see what it's doing.
+  -e --exclude <path> : Exclude the path from scan.
+
+ *--list-exclude-dir          : List all exclude path in ({rcpath}).
+  --add-exclude-dir    <path> : Add exclude path to ({rcpath}).
+  --remove-exclude-dir <path> : Remove exclude path from ({rcpath}).
+
+Notes:
+  If <search_path> is blank the current dir is assumed.
+  Multiple --exclude <path> can be used.
+  Multiple --add-exclude-dir <path> can be used.
+  Multiple --remove-exclude-dir <path> can be used.
+
+  Options marked with * are exclusive, i.e. the cowtodo will run that
+  and exit successfully after the operation.
+  """;
+        msg = msg.format(rcpath=Constants.RC_FILE_PATH);
+        print msg;
 
     @staticmethod
     def print_version():
@@ -148,6 +181,17 @@ class Helper:
             print " ".join(map(str,args));
 
     @staticmethod
+    def print_error(*args):
+        print Helper.colored("[ERROR]", "red"),
+        print " ".join(map(str, args));
+
+    @staticmethod
+    def print_fatal(*args):
+        print Helper.colored("[FATAL]", "red"),
+        print " ".join(map(str, args));
+        exit(1);
+
+    @staticmethod
     def clean_str(s, tag):
         s = s.replace(tag, "");
         s = s.rstrip(" ").lstrip(" ");
@@ -155,6 +199,110 @@ class Helper:
         s = s.lstrip(":").lstrip(" ");
         s = s.rstrip("\n");
         return s;
+
+    @staticmethod
+    def expand_normalize_path(path):
+        if(len(path) == 0):
+            Helper.print_fatal("Invalid empty path.");
+
+        path = os.path.expanduser(path);
+        path = os.path.abspath(path);
+        path = os.path.normpath(path);
+        return path;
+
+################################################################################
+## Exclude Dirs RC                                                            ##
+################################################################################
+class ExcludeDirRC:
+    def __init__(self):
+        self.check_dir_and_file();
+
+    def get_excluded_dirs(self):
+        lines = open(Constants.RC_FILE_PATH).readlines();
+        return map(lambda x: x.replace("\n", ""), lines);
+
+    def check_dir_and_file(self):
+        #Check if the rc folder exists.
+        if(not os.path.isdir(Constants.RC_DIR_PATH)):
+            msg = "Missing folder at: {} - creating one now";
+            Helper.print_error(msg.format(Constants.RC_DIR_PATH));
+            try:
+                os.mkdir(Constants.RC_DIR_PATH);
+            except Exception, e:
+                Helper.print_fatal(e);
+
+        #Check if the database exists.
+        if(not os.path.isfile(Constants.RC_FILE_PATH)):
+            msg = "Missing database file at {} - your dirs are gone - creating one now.";
+            Helper.print_error(msg.format(Constants.RC_FILE_PATH));
+
+            cmd = "touch {}".format(Constants.RC_FILE_PATH);
+            ret = os.system(cmd);
+            if(ret != 0):
+                Helper.print_fatal("cmd:({}) failed.".format(cmd));
+
+    def print_list(self):
+        self.check_dir_and_file();
+        print "Excluded dirs - (Will be ignored in all cowtodo calls):";
+
+        lines = open(Constants.RC_FILE_PATH).readlines();
+        if(len(lines) == 0):
+            print "Empty...";
+            return;
+
+        for line in lines:
+            print " ", Helper.colored(line, "blue").replace("\n", "");
+
+    def add_path(self, path):
+        msg = "Adding path in exclude dirs rc:({})".format(Helper.colored(path, "blue"));
+        Helper.print_verbose(msg);
+
+        #Check if path is valid.
+        if(not os.path.isdir(path)):
+            Helper.print_fatal("Invalid path:({})".format(Helper.colored(path, "red")));
+
+        #Check if we already have this path included.
+        #If included log and return.
+        grep_cmd = "grep -q \"{}\" \"{}\"".format(path, Constants.RC_FILE_PATH);
+        ret = os.system(grep_cmd);
+        if(ret == 0):
+            msg = "{}{}{}".format("  Path(",
+                                  Helper.colored(path, "blue"),
+                                  ") is already added...");
+            Helper.print_verbose(msg);
+            return;
+
+        #Path is not included add it.
+        echo_cmd = "echo \"{}\" >> \"{}\"".format(path, Constants.RC_FILE_PATH);
+        os.system(echo_cmd);
+
+    def remove_path(self, path):
+        msg = "Removing path in exclude dirs rc:({})".format(Helper.colored(path, "blue"));
+        Helper.print_verbose(msg);
+
+        #Check if we already have this path included.
+        #If not included log and fail.
+        grep_cmd = "grep -q \"{}\" \"{}\"".format(path, Constants.RC_FILE_PATH);
+
+        ret = os.system(grep_cmd);
+        if(ret != 0):
+            msg = "{}{}{}".format("Path(",
+                                  Helper.colored(path, "red"),
+                                  ")is not added...");
+            Helper.print_fatal(msg);
+
+        #Path included, so grep the inverse to a temp file
+        #move the temp over the original one.
+        cmd = "grep -v \"{search}\" \"{original}\" > \"{temp}.temp\"";
+        grep_inv_cmd = cmd.format(search=path,
+                                  original=Constants.RC_FILE_PATH,
+                                  temp=Constants.RC_FILE_PATH);
+        os.system(grep_inv_cmd);
+        #Now move the temp over the original
+        mv_cmd = "mv {temp}.temp {original}".format(temp=Constants.RC_FILE_PATH,
+                                                    original=Constants.RC_FILE_PATH);
+        os.system(mv_cmd);
+
 
 ################################################################################
 ## Tag Entry                                                                  ##
@@ -309,17 +457,19 @@ def output_short():
 ## Script Initialization                                                      ##
 ################################################################################
 def main():
+    #COWTODO: Put this in a try/except.
     #Get the command line options.
     options = getopt.gnu_getopt(sys.argv[1:],
                                 Constants.FLAGS_SHORT,
                                 Constants.FLAGS_LONG);
 
     #Optiongs switches.
-    help_resquested   = False;
-    version_requested = False;
-    long_requested    = False;
-    short_requested   = False;
-    verbose_requested = False;
+    help_resquested              = False;
+    version_requested            = False;
+    long_requested               = False;
+    short_requested              = False;
+    verbose_requested            = False;
+    list_exclude_paths_requested = False;
 
     #Parse the options.
     for option in options[0]:
@@ -327,16 +477,40 @@ def main():
         key = key.lstrip("-");
 
         #Check if flags are present.
-        if  (key in Constants.FLAG_HELP):    help_resquested   = True;
-        elif(key in Constants.FLAG_VERSION): version_requested = True;
-        elif(key in Constants.FLAG_LONG):    long_requested    = True;
-        elif(key in Constants.FLAG_SHORT):   short_requested   = True;
-        elif(key in Constants.FLAG_VERBOSE): verbose_requested = True;
+        #Help.
+        if(key in Constants.FLAG_HELP):
+            help_resquested = True;
+        #Version.
+        elif(key in Constants.FLAG_VERSION):
+            version_requested = True;
+        #Long output.
+        elif(key in Constants.FLAG_LONG):
+            long_requested = True;
+        #Short output.
+        elif(key in Constants.FLAG_SHORT):
+            short_requested = True;
+        #Verbose.
+        elif(key in Constants.FLAG_VERBOSE):
+            verbose_requested = True;
+        #Exclude dir.
         elif(key in Constants.FLAG_EXCLUDE):
-            path = os.path.expanduser(value);
-            path = os.path.abspath(path);
+            #COWTODO: If not a valid path exit.
+            path = Helper.expand_normalize_path(value);
             if(os.path.isdir(path)):
                 Globals.exclude_dirs.append(path);
+        #List exclude dirs in rc.
+        elif(key in Constants.FLAG_LIST_EXCLUDE_DIR):
+            list_exclude_paths_requested = True;
+        #Add the dir to exclude rc.
+        elif(key in Constants.FLAG_ADD_EXCLUDE_DIR):
+            #Error checking about paths will be done when adding the paths.
+            path = Helper.expand_normalize_path(value);
+            Globals.paths_to_add_in_exclude_rc.append(path);
+        #Remove the dir in exclude rc.
+        elif(key in Constants.FLAG_REMOVE_EXCLUDE_DIR):
+            #Error checking about paths will be done when removing the paths.
+            path = Helper.expand_normalize_path(value);
+            Globals.paths_to_remove_in_exclude_rc.append(path);
 
     #Check if the exclusive operations are requested.
     if(help_resquested):
@@ -345,6 +519,22 @@ def main():
     if(version_requested):
         Helper.print_version();
         exit(0);
+    if(list_exclude_paths_requested):
+        ExcludeDirRC().print_list();
+        exit(0);
+
+    #Set the verbose flag.
+    Globals.verbose = verbose_requested;
+
+    #Add/Remove all paths to/from rc before start the run.
+    rc = ExcludeDirRC();
+    for path in Globals.paths_to_add_in_exclude_rc:
+        rc.add_path(path);
+    for path in Globals.paths_to_remove_in_exclude_rc:
+        rc.remove_path(path);
+
+    #Add all the Excluded paths in rc to the list of excluded paths.
+    Globals.exclude_dirs += rc.get_excluded_dirs();
 
     #Set the output function based upon the flag.
     output_f = output_long;
@@ -356,10 +546,7 @@ def main():
     if(len(options[1]) > 0):
         path = options[1][0];
 
-    #Set the verbose flag.
-    Globals.verbose = verbose_requested;
-
-    #Do a scan and present the results.
+    # Do a scan and present the results.
     scan(path);
     Helper.print_verbose("\n\n");
     output_f();
