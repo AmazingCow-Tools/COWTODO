@@ -5,8 +5,8 @@
 ##               ████████                                                     ##
 ##             ██        ██                                                   ##
 ##            ███  █  █  ███                                                  ##
-##            █ █        █ █                                                  ##
-##             ████████████         cowtodo.py - COWTODO                      ##
+##            █ █        █ █        cowtodo.py                                ##
+##             ████████████         COWTODO                                   ##
 ##           █              █       Copyright (c) 2015 AmazingCow             ##
 ##          █     █    █     █      www.AmazingCow.com                        ##
 ##          █     █    █     █                                                ##
@@ -125,7 +125,7 @@ class Helper:
         print "        Mutiple --exclude <path> can be added.";
         print;
 
-    
+
     @staticmethod
     def print_version():
         print "{} - {} - {}".format(Constants.APP_NAME,
@@ -137,7 +137,7 @@ class Helper:
     @staticmethod
     def colored(msg, color):
         return termcolor.colored(msg, color);
-    
+
     @staticmethod
     def print_output(*args):
         print "".join(map(str,args)),
@@ -147,7 +147,7 @@ class Helper:
         if(Globals.verbose):
             print " ".join(map(str,args));
 
-    @staticmethod    
+    @staticmethod
     def clean_str(s, tag):
         s = s.replace(tag, "");
         s = s.rstrip(" ").lstrip(" ");
@@ -163,11 +163,11 @@ class TagEntry:
     def __init__(self, filename):
         self.filename = filename;
         self.data     = {};
-    
+
     def add(self, tag_type, line_no, line_str):
         #Check if we already added something in this tag.
         if(tag_type not in self.data):
-            self.data[tag_type] = [];            
+            self.data[tag_type] = [];
         self.data[tag_type].append([line_no, line_str]);
 
 
@@ -187,18 +187,18 @@ def scan(start_path):
             Helper.print_verbose(
                 Helper.colored("Ignoring:", Constants.COLOR_VERBOSE_IGNORE_TITLE),
                 Helper.colored(root, Constants.COLOR_VERBOSE_IGNORE_MSG));
-            
+
             #Remove the os.walk dirs.
             dirs[:] = [];
 
             #Remove the path from the exclude paths since we're already hit it.
             #So it will be perform better because we gonna search a lot of dirs
             #without test a path that makes no sense anymore.
-            if(is_in_exclude_list):                
+            if(is_in_exclude_list):
                 Globals.exclude_dirs.remove(os.path.abspath(root));
 
             continue; #Skip the rest of for block.
-        
+
         Helper.print_verbose(Helper.colored("Scanning:", Constants.COLOR_VERBOSE_TITLE),
                              Helper.colored(root, Constants.COLOR_VERBOSE_MSG));
 
@@ -221,14 +221,14 @@ def scan(start_path):
                     parse(os.path.join(root, file));
 
 def parse(filename):
-    tag_entry = TagEntry(filename);    
-    
+    tag_entry = TagEntry(filename);
+
     #Open the file and get the lines.
     lines = open(filename).readlines();
     #For all lines.
     for line_no in xrange(0, len(lines)):
         line = lines[line_no];
-        
+
         #Check if any tag was found.
         for tag_name in Globals.tag_names:
             search_str = ".*%s.*" %(tag_name); #Build a regex
@@ -247,14 +247,14 @@ def output_long():
     #Output the messages for all tag names.
     for tag_name in Globals.tag_names:
         #Get the list of entries for this tag.
-        tag_entry_list     = Globals.tag_entries[tag_name];        
+        tag_entry_list     = Globals.tag_entries[tag_name];
         tag_entry_list_len = len(tag_entry_list);
         if(tag_entry_list_len == 0): #Have nothing to show.
             continue;
 
         #Print the Tag name and count of files with it.
         out = "{} - Files({})";
-        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG), 
+        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG),
                          Helper.colored(tag_entry_list_len, Constants.COLOR_NUMBER));
         print out;
 
@@ -280,14 +280,14 @@ def output_short():
     #Output the messages for all tag names.
     for tag_name in Globals.tag_names:
         #Get the list of entries for this tag.
-        tag_entry_list     = Globals.tag_entries[tag_name];        
+        tag_entry_list     = Globals.tag_entries[tag_name];
         tag_entry_list_len = len(tag_entry_list);
         if(tag_entry_list_len == 0): #Have nothing to show.
             continue;
 
         #Print the Tag name and count of files with it.
         out = "{} - Files({})";
-        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG), 
+        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG),
                          Helper.colored(tag_entry_list_len, Constants.COLOR_NUMBER));
         print out;
 
@@ -310,7 +310,7 @@ def output_short():
 ################################################################################
 def main():
     #Get the command line options.
-    options = getopt.gnu_getopt(sys.argv[1:], 
+    options = getopt.gnu_getopt(sys.argv[1:],
                                 Constants.FLAGS_SHORT,
                                 Constants.FLAGS_LONG);
 
@@ -355,7 +355,7 @@ def main():
     path = ".";
     if(len(options[1]) > 0):
         path = options[1][0];
-    
+
     #Set the verbose flag.
     Globals.verbose = verbose_requested;
 
