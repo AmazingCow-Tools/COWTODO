@@ -6,3 +6,5 @@
 #6 - Make a setup file.
 [DONE]#7 - Add options to specify excluded dirs. [file | cmd line]
 [DONE]#8 - Add a rc file with config.
+#9 - Normalize the output messages (Color and style)
+#10 - Do all COWTODOs.
