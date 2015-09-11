@@ -65,7 +65,7 @@ class Constants:
 
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.1.3";
+    APP_VERSION   = "0.1.4";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -77,6 +77,7 @@ class Constants:
     FLAG_SHORT              = "s", "short";
     FLAG_LONG               = "l", "long";
     FLAG_VERBOSE            = "V", "verbose";
+    FLAG_NO_COLORS          =      "no-colors";
     FLAG_EXCLUDE            = "e", "exclude";
     FLAG_ADD_EXCLUDE_DIR    = "add-exclude-dir";
     FLAG_REMOVE_EXCLUDE_DIR = "remove-exclude-dir";
@@ -88,11 +89,11 @@ class Constants:
                    "short",
                    "long",
                    "verbose",
+                   "no-colors",
                    "exclude=",
                    "add-exclude-dir=",
                    "remove-exclude-dir=",
-                   "list-exclude-dir",
-                   ];
+                   "list-exclude-dir"];
 
     #Exclude Dir RC Paths.
     RC_DIR_PATH  = os.path.expanduser("~/.cowtodorc");
@@ -123,6 +124,7 @@ class Globals:
     exclude_dirs                  = [];
     paths_to_add_in_exclude_rc    = [];
     paths_to_remove_in_exclude_rc = [];
+    colors                        = True;
 
 ################################################################################
 ## Helper                                                                     ##
@@ -141,6 +143,7 @@ Options:
   -s --short          : Output the short listing.
   -l --long           : Output the long listing. (Default)
   -V --verbose        : Verbose mode, helps to see what it's doing.
+     --no-colors      : Make the output uncolored.
   -e --exclude <path> : Exclude the path from scan.
 
  *--list-exclude-dir          : List all exclude path in ({rcpath}).
@@ -169,7 +172,9 @@ Notes:
 
     @staticmethod
     def colored(msg, color):
-        return termcolor.colored(msg, color);
+        if(Globals.colors):
+            return termcolor.colored(msg, color);
+        return msg;
 
     @staticmethod
     def print_output(*args):
@@ -486,6 +491,7 @@ def main():
     long_requested               = False;
     short_requested              = False;
     verbose_requested            = False;
+    no_colors_requested          = False;
     list_exclude_paths_requested = False;
 
     #Parse the options.
@@ -509,6 +515,9 @@ def main():
         #Verbose.
         elif(key in Constants.FLAG_VERBOSE):
             verbose_requested = True;
+        #No Colors.
+        elif(key in Constants.FLAG_NO_COLORS):
+            no_colors_requested = True;
         #Exclude dir.
         elif(key in Constants.FLAG_EXCLUDE):
             #COWTODO: If not a valid path exit.
@@ -540,8 +549,9 @@ def main():
         ExcludeDirRC().print_list();
         exit(0);
 
-    #Set the verbose flag.
+    #Set the verbose | no colors flag.
     Globals.verbose = verbose_requested;
+    Globals.colors  = not no_colors_requested;
 
     #Add/Remove all paths to/from rc before start the run.
     rc = ExcludeDirRC();
