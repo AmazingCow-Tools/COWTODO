@@ -140,7 +140,7 @@ Options:
  *-v --version        : Show app version and copyright.
   -s --short          : Output the short listing.
   -l --long           : Output the long listing. (Default)
-  -v --verbose        : Verbose mode, helps to see what it's doing.
+  -V --verbose        : Verbose mode, helps to see what it's doing.
   -e --exclude <path> : Exclude the path from scan.
 
  *--list-exclude-dir          : List all exclude path in ({rcpath}).
