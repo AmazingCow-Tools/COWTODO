@@ -65,7 +65,7 @@ class Constants:
 
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.1.2";
+    APP_VERSION   = "0.1.3";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -240,6 +240,23 @@ class ExcludeDirRC:
             ret = os.system(cmd);
             if(ret != 0):
                 Helper.print_fatal("cmd:({}) failed.".format(cmd));
+
+        self.verify_paths();
+
+    def verify_paths(self):
+        #Get all paths and check if them refer to a directory.
+        invalid_paths = [];
+        for path in self.get_excluded_dirs():
+            if(os.path.isdir(path) == False):
+                invalid_paths.append(path);
+
+        #If any of them is invalid, show a faltal error log.
+        if(len(invalid_paths) != 0):
+            rc_path = Helper.colored(Constants.RC_FILE_PATH, "magenta");
+            msg = "Invalid Paths in ({}):\n  ".format(rc_path);
+            msg += Helper.colored("\n  ".join(invalid_paths), "red");
+            msg += "\nFix it to so cowtodo can run."
+            Helper.print_fatal(msg);
 
     def print_list(self):
         self.check_dir_and_file();
