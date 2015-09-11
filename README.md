@@ -8,6 +8,10 @@ Search specific tags in our source code and print in a formated way.
 ## Install:
 ```$ sudo ln -f path/to/cowtodo.py /usr/local/bin/cowtodo```
 
+or use the makefile
+
+```$ make install```
+
 ## Usage:
 ```
 cowtodo [-hv] [-sl] [-e <path>] <search_path>
