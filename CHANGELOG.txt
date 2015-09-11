@@ -20,3 +20,6 @@ version 0.1.3:
                 to user if any of them is invalid. Currently it's a fatal
                 error, so any invalid path must be corrected before cowtodo
                 can run.
+
+version 0.1.4:
+[Sep 11 2015] - Add support to uncolored output with the flag --no-colors.

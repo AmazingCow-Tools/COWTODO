@@ -24,6 +24,7 @@ Options:
   -s --short          : Output the short listing.
   -l --long           : Output the long listing. (Default)
   -v --verbose        : Verbose mode, helps to see what it's doing.
+     --no-colors      : Make the output uncolored.
   -e --exclude <path> : Exclude the path from scan.
 
  *--list-exclude-dir          : List all exclude path in (rcpath).
@@ -32,10 +33,10 @@ Options:
 ```
 
 #####Notes:
-  If ```<search_path>``` is blank the current dir is assumed.  
-  Multiple ```--exclude <path>``` can be used.  
-  Multiple ```--add-exclude-dir <path>``` can be used.  
-  Multiple ```--remove-exclude-dir <path>``` can be used.  
+  If ```<search_path>``` is blank the current dir is assumed.
+  Multiple ```--exclude <path>``` can be used.
+  Multiple ```--add-exclude-dir <path>``` can be used.
+  Multiple ```--remove-exclude-dir <path>``` can be used.
 
   Options marked with * are exclusive, i.e. the ```cowtodo``` will run that
   and exit successfully after the operation.
