@@ -6,7 +6,7 @@ Made with <3 by [Amazing Cow](http://www.amazingcow.com).
 Search specific tags in our source code and print in a formated way.
 
 ## Install:
-```$ sudo ln -f path/to/cowtodo.py /usr/local/bin/cowtodo```
+```$ sudo cp -f path/to/cowtodo.py /usr/local/bin/cowtodo```
 
 or use the makefile
 
