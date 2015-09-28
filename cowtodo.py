@@ -65,7 +65,7 @@ class Constants:
 
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.1.4";
+    APP_VERSION   = "0.1.5";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -104,13 +104,14 @@ class Constants:
 ## Globals                                                                    ##
 ################################################################################
 class Globals:
-    extensions = [".py",          #python
-                  ".h", ".c",     #C
-                  ".cpp",         #C++
-                  ".m", ".mm",    #ObjC
-                  ".js", ".jsx",  #Javascript
-                  ".php",         #PHP
-                  ".htm", ".html" #html
+    extensions = [".py" ,          #python
+                  ".h"  , ".c"   , #C
+                  ".cpp",          #C++
+                  ".m"  , ".mm"  , #ObjC
+                  ".js" , ".jsx" , #Javascript
+                  ".php",          #PHP
+                  ".htm", ".html", #html
+                  ".sh" ,          #Shell Script.
                   ];
 
     tag_names      = ["COWTODO", "COWFIX", "COWHACK"];

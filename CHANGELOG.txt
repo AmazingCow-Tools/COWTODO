@@ -23,3 +23,6 @@ version 0.1.3:
 
 version 0.1.4:
 [Sep 11 2015] - Add support to uncolored output with the flag --no-colors.
+
+version 0.1.5:
+[Sep 11 2015] - Add the shell script extension.
