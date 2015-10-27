@@ -42,7 +42,7 @@
 
 install:
 	cp -f ./cowtodo.py /usr/local/bin/cowtodo
-	chmod 744 /usr/local/bin/cowtodo
+	chmod 755 /usr/local/bin/cowtodo
 
 uninstall:
 	rm -f /usr/local/bin/cowtodo
