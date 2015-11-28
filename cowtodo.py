@@ -65,7 +65,7 @@ class Constants:
 
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.1.5";
+    APP_VERSION   = "0.1.6";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -261,7 +261,7 @@ class ExcludeDirRC:
             rc_path = Helper.colored(Constants.RC_FILE_PATH, "magenta");
             msg = "Invalid Paths in ({}):\n  ".format(rc_path);
             msg += Helper.colored("\n  ".join(invalid_paths), "red");
-            msg += "\nFix it to so cowtodo can run."
+            msg += "\nFix it... then cowtodo can run."
             Helper.print_fatal(msg);
 
     def print_list(self):

@@ -26,3 +26,6 @@ version 0.1.4:
 
 version 0.1.5:
 [Sep 11 2015] - Add the shell script extension.
+
+version 0.1.6:
+[Nov 27 2015] - Fix the error message.
