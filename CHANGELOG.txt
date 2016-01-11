@@ -29,3 +29,7 @@ version 0.1.5:
 
 version 0.1.6:
 [Nov 27 2015] - Fix the error message.
+
+version 0.1.7:
+[Jan 1 2016] - Make the termcolor package a non requirement.
+               Update the license header.

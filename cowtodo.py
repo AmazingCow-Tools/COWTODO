@@ -7,7 +7,7 @@
 ##            ███  █  █  ███                                                  ##
 ##            █ █        █ █        cowtodo.py                                ##
 ##             ████████████         COWTODO                                   ##
-##           █              █       Copyright (c) 2015 AmazingCow             ##
+##           █              █       Copyright (c) 2015, 2016 -  AmazingCow    ##
 ##          █     █    █     █      www.AmazingCow.com                        ##
 ##          █     █    █     █                                                ##
 ##           █              █       N2OMatt - n2omatt@amazingcow.com          ##
@@ -45,9 +45,19 @@ import os
 import os.path;
 import time;
 import re;
-import termcolor;
 import getopt;
 import sys;
+
+## Since termcolor isn't a standard package.
+## We don't force the user install it.
+## So check if we can import the package,
+## otherwise just define the plain functions.
+try:
+   from termcolor import colored;
+except ImportError, e:
+   def colored(msg, color):
+      return msg;
+
 
 ################################################################################
 ## Constants                                                                  ##
@@ -65,7 +75,7 @@ class Constants:
 
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.1.6";
+    APP_VERSION   = "0.1.7";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -174,7 +184,7 @@ Notes:
     @staticmethod
     def colored(msg, color):
         if(Globals.colors):
-            return termcolor.colored(msg, color);
+            return colored(msg, color);
         return msg;
 
     @staticmethod
