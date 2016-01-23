@@ -114,15 +114,15 @@ class Constants:
 ## Globals                                                                    ##
 ################################################################################
 class Globals:
-    extensions = [".py" ,          #python
-                  ".h"  , ".c"   , #C
-                  ".cpp",          #C++
-                  ".m"  , ".mm"  , #ObjC
-                  ".js" , ".jsx" , #Javascript
-                  ".php",          #PHP
-                  ".htm", ".html", #html
-                  ".sh" ,          #Shell Script.
-                  ];
+    extensions = [ ".h"   , ".c",   #C
+                   ".cpp" ,         #C++
+                   ".html", ".htm", #html
+                   ".js"  , ".jsx", #Javascript
+                   ".m"   , ".mm",  #ObjC
+                   ".php" ,         #PHP
+                   ".py"  ,         #python
+                   ".sh"            #Shell Script.
+                ];
 
     tag_names      = ["COWTODO", "COWFIX", "COWHACK"];
     this_file_name = "cowtodo.py";
