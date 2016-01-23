@@ -7,7 +7,7 @@
 ##            ███  █  █  ███                                                  ##
 ##            █ █        █ █        cowtodo.py                                ##
 ##             ████████████         COWTODO                                   ##
-##           █              █       Copyright (c) 2015, 2016 -  AmazingCow    ##
+##           █              █       Copyright (c) 2015, 2016 - AmazingCow     ##
 ##          █     █    █     █      www.AmazingCow.com                        ##
 ##          █     █    █     █                                                ##
 ##           █              █       N2OMatt - n2omatt@amazingcow.com          ##
@@ -77,7 +77,7 @@ class Constants:
     APP_NAME      = "cowtodo";
     APP_VERSION   = "0.1.7";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
-    APP_COPYRIGHT = "\n".join(("Copyright (c) 2015 - Amazing Cow",
+    APP_COPYRIGHT = "\n".join(("Copyright (c) 2015, 2016 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
                                "Check opensource.amazingcow.com for more :)"));
 
