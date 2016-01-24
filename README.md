@@ -1,9 +1,15 @@
 COWTODO
 ====
+
 Made with <3 by [Amazing Cow](http://www.amazingcow.com).
+
+<!-- ####################################################################### -->
 
 ## Intro:
 Search specific tags in our source code and print in a formated way.
+
+
+<!-- ####################################################################### -->
 
 ## Install:
 ```$ sudo cp -f path/to/cowtodo.py /usr/local/bin/cowtodo```
@@ -11,6 +17,9 @@ Search specific tags in our source code and print in a formated way.
 or use the makefile
 
 ```$ make install```
+
+
+<!-- ####################################################################### -->
 
 ## Usage:
 ```
@@ -41,11 +50,20 @@ Options:
   Options marked with * are exclusive, i.e. the ```cowtodo``` will run that
   and exit successfully after the operation.
 
+
+<!-- ####################################################################### -->
+
 ## License:
 This software is released under GPLv3.
 
+
+<!-- ####################################################################### -->
+
 ## TODO:
 Check the TODO file.
+
+
+<!-- ####################################################################### -->
 
 ## Others:
 Check our repos and take a look at our [open source site](http://opensource.amazingcow.com).
