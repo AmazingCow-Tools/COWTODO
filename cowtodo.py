@@ -115,27 +115,36 @@ class Constants:
 ################################################################################
 class Globals:
     extensions = [ ".h"   , ".c",   #C
-                   ".cpp" ,         #C++
-                   ".html", ".htm", #html
+                   ".cpp" , ".cc",  #C++                   
+                   ".html", ".htm", #HTML
                    ".js"  , ".jsx", #Javascript
+                   ".md",           #Markdown
                    ".m"   , ".mm",  #ObjC
                    ".php" ,         #PHP
-                   ".py"  ,         #python
+                   ".py"  ,         #Python
                    ".sh"            #Shell Script.
                 ];
 
-    tag_names      = ["COWTODO", "COWFIX", "COWHACK"];
+    tag_names = [ "COWTODO", 
+                  "COWFIX", 
+                  "COWHACK",
+                  "COWNOTE", ];
+
     this_file_name = "cowtodo.py";
+    
     tag_entries    = {
         "COWTODO" : [],
         "COWHACK" : [],
-        "COWFIX"  : []
-    }
+        "COWFIX"  : [],
+        "COWNOTE" : [],
+    };
+
     verbose                       = False;
     exclude_dirs                  = [];
     paths_to_add_in_exclude_rc    = [];
     paths_to_remove_in_exclude_rc = [];
     colors                        = True;
+
 
 ################################################################################
 ## Helper                                                                     ##
@@ -225,6 +234,7 @@ Notes:
         path = os.path.abspath(path);
         path = os.path.normpath(path);
         return path;
+
 
 ################################################################################
 ## Exclude Dirs RC                                                            ##
@@ -420,6 +430,7 @@ def parse(filename):
 
     for tag_name in tag_entry.data.keys():
         Globals.tag_entries[tag_name].append(tag_entry);
+
 
 ################################################################################
 ## Output Functions                                                           ##
