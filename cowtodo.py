@@ -40,6 +40,17 @@
 ##                                  Enjoy :)                                  ##
 ##----------------------------------------------------------------------------##
 
+#COWTODO: #01 - Check if the output is a terminal, if not does not put color.
+#COWTODO: #02 - Add an option to specify more tags if needed.
+#COWTODO: #03 - Better error checking.
+#COWTODO: #04 - Refactor the issues output methods.
+#COWTODO: #05 - Output to a sql statements, xml, json etc.
+#COWTODO: #06 - Make a setup file.
+#COWTODO: #09 - Normalize the output messages (Color and style)
+#COWTODO: #10 - Check the viabillity of add the \ char to end of string to make
+#               COWTODO understand that it should continue read the next line.
+
+
 ## Imports ##
 import os
 import os.path;
@@ -115,7 +126,7 @@ class Constants:
 ################################################################################
 class Globals:
     extensions = [ ".h"   , ".c",   #C
-                   ".cpp" , ".cc",  #C++                   
+                   ".cpp" , ".cc",  #C++
                    ".html", ".htm", #HTML
                    ".js"  , ".jsx", #Javascript
                    ".md",           #Markdown
@@ -125,13 +136,13 @@ class Globals:
                    ".sh"            #Shell Script.
                 ];
 
-    tag_names = [ "COWTODO", 
-                  "COWFIX", 
+    tag_names = [ "COWTODO",
+                  "COWFIX",
                   "COWHACK",
                   "COWNOTE", ];
 
     this_file_name = "cowtodo.py";
-    
+
     tag_entries    = {
         "COWTODO" : [],
         "COWHACK" : [],
