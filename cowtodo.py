@@ -47,8 +47,6 @@
 #COWTODO: #05 - Output to a sql statements, xml, json etc.
 #COWTODO: #06 - Make a setup file.
 #COWTODO: #09 - Normalize the output messages (Color and style)
-#COWTODO: #10 - Check the viability of add the \ char to end of string to make
-#               COWTODO understand that it should continue read the next line.
 
 
 ## Imports ##
@@ -58,6 +56,7 @@ import time;
 import re;
 import getopt;
 import sys;
+import pdb;
 
 ## Since termcolor isn't a standard package.
 ## We don't force the user install it.
@@ -228,15 +227,6 @@ Notes:
         exit(1);
 
     @staticmethod
-    def clean_str(s, tag):
-        s = s.replace(tag, "");
-        s = s.rstrip(" ").lstrip(" ");
-        s = s.lstrip("#").lstrip("/");
-        s = s.lstrip(":").lstrip(" ");
-        s = s.rstrip("\n");
-        return s;
-
-    @staticmethod
     def expand_normalize_path(path):
         if(len(path) == 0):
             Helper.print_fatal("Invalid empty path.");
@@ -245,6 +235,40 @@ Notes:
         path = os.path.abspath(path);
         path = os.path.normpath(path);
         return path;
+
+    @staticmethod
+    def clean_str(s, tag):
+        s = s.replace("\n", "");
+
+        #Check if the comment end with a backslash.
+        has_end_backslash = False;
+        s2 = s.strip("\\");
+        if(s2 != s):
+            has_end_backslash = True;
+            s = s2;
+
+        #Remove comments.
+        s = s.strip(" # " );  # PYTHON comments
+        s = s.strip(" /*/ "); # C comments
+        s = s.strip(" / ");   # C++ comments
+        s = s.lstrip(" <!-- ").rstrip(" -->");
+
+        #Remove the spacing.
+        s = s.strip(" ");
+
+        #Remove the current tag.
+        s = s.replace(tag, "");
+        s = s.strip(" : ");
+
+        #If ends with backslash add a new line.
+        if(has_end_backslash):
+            s += "\n";
+
+        #Clean up lines that are empty...
+        if(s == "\n"):
+            s = "";
+
+        return s;
 
 
 ################################################################################
@@ -422,6 +446,7 @@ def scan(start_path):
                     #Parse the file to get all tags.
                     parse(os.path.join(root, file));
 
+
 def parse(filename):
     tag_entry = TagEntry(filename);
 
@@ -431,12 +456,35 @@ def parse(filename):
     for line_no in xrange(0, len(lines)):
         line = lines[line_no];
 
-        #Check if any tag was found.
+        #Iterate for all of our tags in this line.
         for tag_name in Globals.tag_names:
-            search_str = ".*%s.*" %(tag_name); #Build a regex
+            search_str = ".*%s.*" %(tag_name); #Build a regex.
+
+            #Check if any tag was found.
             if(re.search(search_str, line) is not None):
-                clean_line = Helper.clean_str(line, tag_name);
+                clean_line = ""; #Start with a blank line.
+
+                #Keep consuming the lines while them
+                #end with the \ (backslash) char.
+                #Or the end of file is reached.
+                while(True):
+                    clean_line += Helper.clean_str(line, tag_name);
+
+                    #End of file or line not ending with \ backslash
+                    if(line_no >= len(lines) or line[-2] != "\\"):
+                        break;
+
+                    line_no += 1;
+                    line = lines[line_no];
+
+                #Ops... This comment is empty, but we cannot discard it because
+                #it's author may put it like a mark on code.
+                if(len(clean_line) == 0):
+                    clean_line += "__EMPTY [{}] COMMENT__".format(tag_name);
+
                 tag_entry.add(tag_name, line_no, clean_line);
+
+                #We just take in account on type of tag for each time.
                 break;
 
     for tag_name in tag_entry.data.keys():
@@ -472,11 +520,31 @@ def output_long():
                              Helper.colored(entry_data_len, Constants.COLOR_NUMBER));
             print out;
 
+            digits_on_greater_entry_no =  len(str(entry_data[-1][0]));
             for entry_info in entry_data:
-                #Print the line of issue and its message.
-                out = "\t ({}) {}";
-                out = out.format(Helper.colored(entry_info[0], Constants.COLOR_NUMBER),
-                                 Helper.colored(entry_info[1], Constants.COLOR_ISSUE));
+                entry_file  = entry.filename;
+                entry_no    = entry_info[0];
+                entry_issue = entry_info[1];
+
+                spacing_chars = " " * 8;
+
+                #Left padding the entry number with zeros.
+                number_of_zeros = (digits_on_greater_entry_no - len(str(entry_no)));
+                entry_no = ("0" * number_of_zeros) + str(entry_no);
+
+                #Padding them entry issue to make it aligned.
+                padding = " " * (len(entry_no) + 3);
+                entry_issue = entry_issue.replace("\n", "\n" + spacing_chars + padding)
+
+                #Put colors.
+                colored_entry_no    = Helper.colored(entry_no,    Constants.COLOR_NUMBER);
+                colored_entry_issue = Helper.colored(entry_issue, Constants.COLOR_ISSUE);
+
+                out = "{}({}) {}";
+                out = out.format(spacing_chars,
+                                 colored_entry_no,
+                                 colored_entry_issue);
+
                 print out;
 
 def output_short():
@@ -499,12 +567,29 @@ def output_short():
             entry_data     = entry.data[tag_name];
             entry_data_len = len(entry_data);
 
+            digits_on_greater_entry_no =  len(str(entry_data[-1][0]));
             for entry_info in entry_data:
+                entry_file  = entry.filename;
+                entry_no    = entry_info[0];
+                entry_issue = entry_info[1];
+
+                #Left padding the entry number with zeros.
+                number_of_zeros = (digits_on_greater_entry_no - len(str(entry_no)));
+                entry_no = ("0" * number_of_zeros) + str(entry_no);
+
+                #Padding the entry issue to make them aligned
+                entry_issue_offset = " " * (len(entry_file) + len(entry_no) + 3);
+                entry_issue = entry_issue.replace("\n", "\n" + entry_issue_offset);
+
                 #Print the line of issue and its message.
-                out = "{} - ({}) {}";
-                out = out.format(Helper.colored(entry.filename,Constants.COLOR_FILE),
-                                 Helper.colored(entry_info[0], Constants.COLOR_NUMBER),
-                                 Helper.colored(entry_info[1], Constants.COLOR_ISSUE));
+                colored_entry_file  = Helper.colored(entry_file,  Constants.COLOR_FILE);
+                colored_entry_no    = Helper.colored(entry_no,    Constants.COLOR_NUMBER);
+                colored_entry_issue = Helper.colored(entry_issue, Constants.COLOR_ISSUE);
+
+                out = "{}({}) {}";
+                out = out.format(colored_entry_file,
+                                 colored_entry_no,
+                                 colored_entry_issue);
                 print out;
 
 
@@ -613,3 +698,4 @@ def main():
 
 if(__name__ == "__main__"):
     main();
+
