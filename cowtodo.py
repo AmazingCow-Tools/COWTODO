@@ -47,7 +47,7 @@
 #COWTODO: #05 - Output to a sql statements, xml, json etc.
 #COWTODO: #06 - Make a setup file.
 #COWTODO: #09 - Normalize the output messages (Color and style)
-#COWTODO: #10 - Check the viabillity of add the \ char to end of string to make
+#COWTODO: #10 - Check the viability of add the \ char to end of string to make
 #               COWTODO understand that it should continue read the next line.
 
 
@@ -287,7 +287,7 @@ class ExcludeDirRC:
             if(os.path.isdir(path) == False):
                 invalid_paths.append(path);
 
-        #If any of them is invalid, show a faltal error log.
+        #If any of them is invalid, show a fatal error log.
         if(len(invalid_paths) != 0):
             rc_path = Helper.colored(Constants.RC_FILE_PATH, "magenta");
             msg = "Invalid Paths in ({}):\n  ".format(rc_path);
@@ -518,7 +518,7 @@ def main():
                                 Constants.FLAGS_SHORT,
                                 Constants.FLAGS_LONG);
 
-    #Optiongs switches.
+    #Options switches.
     help_resquested              = False;
     version_requested            = False;
     long_requested               = False;
