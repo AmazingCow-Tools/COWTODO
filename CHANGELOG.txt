@@ -1,19 +1,22 @@
-version 0.1:
-[Aug 11 2015] - Finish the basic implementation.
-                The cowtodo can search in specified folders,
-                print in Long and Short modes and have a
-                verbose mode that shows every scan and parse.
+version 0.2.0:
+[Apr 6 2016] - Make the COWTODO understand the \ char - Now multiline comments
+               are supported :D
+               Reverse the order of CHANGELOG - Now the last change appears on
+               top of file (this is much more logical than the way before).
 
-version 0.1.1:
-[Aug 13 2015] - Partially addresses the TODO#7, we are now able
-                to specify the exclude paths.
-                NOTE: We didn't test this release too much.
+================================================================================
+version 0.1.7:
+[Jan 1 2016] - Make the termcolor package a non requirement.
+               Update the license header.
 
-version 0.1.2:
-[Aug 26 2015] - Complete the TODO#7 and TODO#8, we are now able to specify
-                the paths to add or remove permanently in the
-                rc file. So all cowtodos calls will ignore those
-                paths.
+version 0.1.6:
+[Nov 27 2015] - Fix the error message.
+
+version 0.1.5:
+[Sep 11 2015] - Add the shell script extension.
+
+version 0.1.4:
+[Sep 11 2015] - Add support to uncolored output with the flag --no-colors.
 
 version 0.1.3:
 [Sep 11 2015] - cowtodo now check for invalid paths in a rc file and show
@@ -21,15 +24,19 @@ version 0.1.3:
                 error, so any invalid path must be corrected before cowtodo
                 can run.
 
-version 0.1.4:
-[Sep 11 2015] - Add support to uncolored output with the flag --no-colors.
+version 0.1.2:
+[Aug 26 2015] - Complete the TODO#7 and TODO#8, we are now able to specify
+                the paths to add or remove permanently in the
+                rc file. So all cowtodos calls will ignore those
+                paths.
 
-version 0.1.5:
-[Sep 11 2015] - Add the shell script extension.
+version 0.1.1:
+[Aug 13 2015] - Partially addresses the TODO#7, we are now able
+                to specify the exclude paths.
+                NOTE: We didn't test this release too much.
 
-version 0.1.6:
-[Nov 27 2015] - Fix the error message.
-
-version 0.1.7:
-[Jan 1 2016] - Make the termcolor package a non requirement.
-               Update the license header.
+version 0.1:
+[Aug 11 2015] - Finish the basic implementation.
+                The cowtodo can search in specified folders,
+                print in Long and Short modes and have a
+                verbose mode that shows every scan and parse.
