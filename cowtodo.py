@@ -47,7 +47,7 @@
 #COWTODO: #05 - Output to a sql statements, xml, json etc.
 #COWTODO: #06 - Make a setup file.
 #COWTODO: #09 - Normalize the output messages (Color and style)
-
+#COWTODO: #10 - Change the termcolor to cowtermcolor.
 
 ## Imports ##
 import os
