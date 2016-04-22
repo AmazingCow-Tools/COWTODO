@@ -50,42 +50,60 @@
 #COWTODO: #10 - Change the termcolor to cowtermcolor.
 
 ## Imports ##
+import getopt;
 import os
 import os.path;
-import time;
-import re;
-import getopt;
-import sys;
 import pdb;
+import re;
+import sys;
+import time;
 
-## Since termcolor isn't a standard package.
-## We don't force the user install it.
-## So check if we can import the package,
-## otherwise just define the plain functions.
+
+################################################################################
+## Don't let the standard import error to users - Instead show a              ##
+## 'nice' error screen describing the error and how to fix it.                ##
+################################################################################
+def __import_error_message_print(pkg_name, pkg_url):
+    print "Sorry, "
+    print "cowtodo depends on {} package.".format(pkg_name);
+    print "Visit {} to get it.".format(pkg_url);
+    print "Or checkout the README.md to learn other ways to install {}.".format(pkg_name);
+    Helper.exit(1);
+
+
+## cowtermcolor ##
 try:
-   from termcolor import colored;
+    from cowtermcolor import *;
 except ImportError, e:
-   def colored(msg, color):
-      return msg;
+    __import_error_message_print(
+        "cowtermcolor",
+        "http//opensource.amazingcow.com/cowtermcolor.html");
+
+
+################################################################################
+## Color                                                                      ##
+################################################################################
+ColorPath               = Color(MAGENTA);
+ColorError              = Color(RED);
+ColorInfo               = Color(BLUE);
+
+ColorFile               = Color(YELLOW);
+ColorIssue              = Color(GREEN);
+ColorNumber             = Color(CYAN);
+ColorTag                = Color(RED);
+ColorVerboseTitle       = Color(BLUE);
+ColorVerboseMsg         = Color(MAGENTA);
+ColorVerboseIgnoreTitle = Color(RED);
+ColorVerboseIgnoreMsg   = Color(YELLOW);
 
 
 ################################################################################
 ## Constants                                                                  ##
 ################################################################################
 class Constants:
-    #Color.
-    COLOR_FILE                 = "yellow";
-    COLOR_ISSUE                = "green";
-    COLOR_NUMBER               = "cyan";
-    COLOR_TAG                  = "red";
-    COLOR_VERBOSE_TITLE        = "blue";
-    COLOR_VERBOSE_MSG          = "magenta";
-    COLOR_VERBOSE_IGNORE_TITLE = "red";
-    COLOR_VERBOSE_IGNORE_MSG   = "yellow";
-
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.2.0";
+    APP_VERSION   = "0.3.0";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015, 2016 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -97,11 +115,11 @@ class Constants:
     FLAG_SHORT              = "s", "short";
     FLAG_LONG               = "l", "long";
     FLAG_VERBOSE            = "V", "verbose";
-    FLAG_NO_COLORS          =      "no-colors";
+    FLAG_NO_COLORS          =  "", "no-colors";
     FLAG_EXCLUDE            = "e", "exclude";
-    FLAG_ADD_EXCLUDE_DIR    = "add-exclude-dir";
-    FLAG_REMOVE_EXCLUDE_DIR = "remove-exclude-dir";
-    FLAG_LIST_EXCLUDE_DIR   = "list-exclude-dir";
+    FLAG_ADD_EXCLUDE_DIR    =  "", "add-exclude-dir";
+    FLAG_REMOVE_EXCLUDE_DIR =  "", "remove-exclude-dir";
+    FLAG_LIST_EXCLUDE_DIR   =  "", "list-exclude-dir";
 
     FLAGS_SHORT = "hvslVe:";
     FLAGS_LONG  = ["help",
@@ -201,12 +219,6 @@ Notes:
         print;
 
     @staticmethod
-    def colored(msg, color):
-        if(Globals.colors):
-            return colored(msg, color);
-        return msg;
-
-    @staticmethod
     def print_output(*args):
         print "".join(map(str,args)),
 
@@ -217,14 +229,14 @@ Notes:
 
     @staticmethod
     def print_error(*args):
-        print Helper.colored("[ERROR]", "red"),
+        print ColorError("[ERROR]"),
         print " ".join(map(str, args));
 
     @staticmethod
     def print_fatal(*args):
-        print Helper.colored("[FATAL]", "red"),
+        print ColorError("[FATAL]"),
         print " ".join(map(str, args));
-        exit(1);
+        Helper.exit(1);
 
     @staticmethod
     def expand_normalize_path(path):
@@ -270,23 +282,28 @@ Notes:
 
         return s;
 
+    @staticmethod
+    def exit(code):
+        print "exiting with code:", code;
+
 
 ################################################################################
 ## Exclude Dirs RC                                                            ##
 ################################################################################
 class ExcludeDirRC:
-    def __init__(self):
-        self.check_dir_and_file();
-
-    def get_excluded_dirs(self):
+    @staticmethod
+    def get_excluded_dirs():
         lines = open(Constants.RC_FILE_PATH).readlines();
         return map(lambda x: x.replace("\n", ""), lines);
 
-    def check_dir_and_file(self):
+    @staticmethod
+    def check_dir_and_file():
         #Check if the rc folder exists.
         if(not os.path.isdir(Constants.RC_DIR_PATH)):
-            msg = "Missing folder at: {} - creating one now";
-            Helper.print_error(msg.format(Constants.RC_DIR_PATH));
+            msg = "Missing folder at: ({})\n  Creating one now.";
+            msg = msg.format(ColorPath(Constants.RC_DIR_PATH));
+            Helper.print_error(msg);
+
             try:
                 os.mkdir(Constants.RC_DIR_PATH);
             except Exception, e:
@@ -294,59 +311,68 @@ class ExcludeDirRC:
 
         #Check if the database exists.
         if(not os.path.isfile(Constants.RC_FILE_PATH)):
-            msg = "Missing database file at {} - your dirs are gone - creating one now.";
-            Helper.print_error(msg.format(Constants.RC_FILE_PATH));
+            msg = "Missing database file at ({})\n  Your dirs are gone - Creating one now.";
+            msg = msg.format(ColorPath(Constants.RC_FILE_PATH));
+            Helper.print_error(msg);
 
             cmd = "touch {}".format(Constants.RC_FILE_PATH);
             ret = os.system(cmd);
             if(ret != 0):
-                Helper.print_fatal("cmd:({}) failed.".format(cmd));
+                Helper.print_fatal("cmd: ({}) failed.".format(ColorInfo(cmd)));
 
-        self.verify_paths();
-
-    def verify_paths(self):
+    @staticmethod
+    def verify_paths():
         #Get all paths and check if them refer to a directory.
         invalid_paths = [];
-        for path in self.get_excluded_dirs():
-            if(os.path.isdir(path) == False):
-                invalid_paths.append(path);
+        line = 1;
+        for path in ExcludeDirRC.get_excluded_dirs():
+            fullpath = Helper.expand_normalize_path(path);
+            if(os.path.isdir(fullpath) == False):
+                invalid_paths.append({"line" : line, "path" : path});
+            line += 1;
 
         #If any of them is invalid, show a fatal error log.
         if(len(invalid_paths) != 0):
-            rc_path = Helper.colored(Constants.RC_FILE_PATH, "magenta");
-            msg = "Invalid Paths in ({}):\n  ".format(rc_path);
-            msg += Helper.colored("\n  ".join(invalid_paths), "red");
+            rc_path = ColorPath(Constants.RC_FILE_PATH);
+
+            msg  = "Invalid Paths in ({}):\n".format(rc_path);
+
+            for d in invalid_paths:
+                msg += "  {} - line:({})\n".format(ColorError(d["path"]),
+                                                   ColorInfo(d["line"]));
+
             msg += "\nFix it... then cowtodo can run."
             Helper.print_fatal(msg);
 
-    def print_list(self):
-        self.check_dir_and_file();
+    @staticmethod
+    def print_list():
         print "Excluded dirs - (Will be ignored in all cowtodo calls):";
 
-        lines = open(Constants.RC_FILE_PATH).readlines();
+        lines = ExcludeDirRC.get_excluded_dirs();
         if(len(lines) == 0):
             print "Empty...";
             return;
 
         for line in lines:
-            print " ", Helper.colored(line, "blue").replace("\n", "");
+            print " ", ColorPath(line.replace("\n", ""));
 
-    def add_path(self, path):
-        msg = "Adding path in exclude dirs rc:({})".format(Helper.colored(path, "blue"));
+    @staticmethod
+    def add_path(path):
+        msg = "Adding path in exclude dirs rc:({})".format(ColorPath(path));
         Helper.print_verbose(msg);
 
+        fullpath = Helper.expand_normalize_path(path);
+
         #Check if path is valid.
-        if(not os.path.isdir(path)):
-            Helper.print_fatal("Invalid path:({})".format(Helper.colored(path, "red")));
+        if(not os.path.isdir(fullpath)):
+            Helper.print_fatal("Invalid path:({})".format(ColorPath(path)));
 
         #Check if we already have this path included.
         #If included log and return.
         grep_cmd = "grep -q \"{}\" \"{}\"".format(path, Constants.RC_FILE_PATH);
         ret = os.system(grep_cmd);
         if(ret == 0):
-            msg = "{}{}{}".format("  Path(",
-                                  Helper.colored(path, "blue"),
-                                  ") is already added...");
+            msg = "Path ({}) is already added...".format(ColorPath(path));
             Helper.print_verbose(msg);
             return;
 
@@ -354,8 +380,9 @@ class ExcludeDirRC:
         echo_cmd = "echo \"{}\" >> \"{}\"".format(path, Constants.RC_FILE_PATH);
         os.system(echo_cmd);
 
-    def remove_path(self, path):
-        msg = "Removing path in exclude dirs rc:({})".format(Helper.colored(path, "blue"));
+    @staticmethod
+    def remove_path(path):
+        msg = "Removing path in exclude dirs rc:({})".format(ColorPath(path));
         Helper.print_verbose(msg);
 
         #Check if we already have this path included.
@@ -364,21 +391,21 @@ class ExcludeDirRC:
 
         ret = os.system(grep_cmd);
         if(ret != 0):
-            msg = "{}{}{}".format("Path(",
-                                  Helper.colored(path, "red"),
-                                  ")is not added...");
+            msg = "Path ({}) is not added...".format(ColorPath(path));
             Helper.print_fatal(msg);
+
 
         #Path included, so grep the inverse to a temp file
         #move the temp over the original one.
         cmd = "grep -v \"{search}\" \"{original}\" > \"{temp}.temp\"";
-        grep_inv_cmd = cmd.format(search=path,
-                                  original=Constants.RC_FILE_PATH,
-                                  temp=Constants.RC_FILE_PATH);
+        grep_inv_cmd = cmd.format(search   = path,
+                                  original = Constants.RC_FILE_PATH,
+                                  temp     = Constants.RC_FILE_PATH);
         os.system(grep_inv_cmd);
+
         #Now move the temp over the original
-        mv_cmd = "mv {temp}.temp {original}".format(temp=Constants.RC_FILE_PATH,
-                                                    original=Constants.RC_FILE_PATH);
+        mv_cmd = "mv {temp}.temp {original}".format(temp     = Constants.RC_FILE_PATH,
+                                                    original = Constants.RC_FILE_PATH);
         os.system(mv_cmd);
 
 
@@ -659,13 +686,13 @@ def main():
     #Check if the exclusive operations are requested.
     if(help_resquested):
         Helper.print_help();
-        exit(0);
+        Helper.exit(0);
     if(version_requested):
         Helper.print_version();
-        exit(0);
+        Helper.exit(0);
     if(list_exclude_paths_requested):
         ExcludeDirRC().print_list();
-        exit(0);
+        Helper.exit(0);
 
     #Set the verbose | no colors flag.
     Globals.verbose = verbose_requested;
