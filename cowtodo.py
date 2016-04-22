@@ -632,11 +632,13 @@ def output_short():
 ## Script Initialization                                                      ##
 ################################################################################
 def main():
-    #COWTODO: Put this in a try/except.
-    #Get the command line options.
-    options = getopt.gnu_getopt(sys.argv[1:],
-                                Constants.FLAGS_SHORT,
-                                Constants.FLAGS_LONG);
+    try:
+        #Get the command line options.
+        options = getopt.gnu_getopt(sys.argv[1:],
+                                    Constants.FLAGS_SHORT,
+                                    Constants.FLAGS_LONG);
+    except Exception, e:
+        Helper.print_fatal(e);
 
     #Options switches.
     long_requested      = False;
