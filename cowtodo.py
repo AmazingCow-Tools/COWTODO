@@ -86,15 +86,11 @@ except ImportError, e:
 ColorPath               = Color(MAGENTA);
 ColorError              = Color(RED);
 ColorInfo               = Color(BLUE);
-
-ColorFile               = Color(YELLOW);
+ColorProcess            = Color(YELLOW);
+ColorFile               = Color(CYAN);
 ColorIssue              = Color(GREEN);
-ColorNumber             = Color(CYAN);
+ColorNumber             = Color(BLUE);
 ColorTag                = Color(RED);
-ColorVerboseTitle       = Color(BLUE);
-ColorVerboseMsg         = Color(MAGENTA);
-ColorVerboseIgnoreTitle = Color(RED);
-ColorVerboseIgnoreMsg   = Color(YELLOW);
 
 
 ################################################################################
@@ -171,7 +167,6 @@ class Globals:
     exclude_dirs                  = [];
     paths_to_add_in_exclude_rc    = [];
     paths_to_remove_in_exclude_rc = [];
-    colors                        = True;
 
 
 ################################################################################
@@ -179,7 +174,7 @@ class Globals:
 ################################################################################
 class Helper:
     @staticmethod
-    def print_help():
+    def print_help(exit_code = -1):
         msg = "Usage:" +"""
   cowtodo [-hv] [-sl] [-e <path>] <search_path>
   cowtodo [--list-exclude-dir]
@@ -210,13 +205,19 @@ Notes:
         msg = msg.format(rcpath=Constants.RC_FILE_PATH);
         print msg;
 
+        if(exit_code != -1):
+            Helper.exit(exit_code);
+
     @staticmethod
-    def print_version():
+    def print_version(exit_code = -1):
         print "{} - {} - {}".format(Constants.APP_NAME,
                                     Constants.APP_VERSION,
                                     Constants.APP_AUTHOR);
         print Constants.APP_COPYRIGHT;
         print;
+
+        if(exit_code != -1):
+            Helper.exit(exit_code);
 
     @staticmethod
     def print_output(*args):
@@ -284,7 +285,7 @@ Notes:
 
     @staticmethod
     def exit(code):
-        print "exiting with code:", code;
+        exit(code);
 
 
 ################################################################################
@@ -358,7 +359,7 @@ class ExcludeDirRC:
 
     @staticmethod
     def add_path(path):
-        msg = "Adding path in exclude dirs rc:({})".format(ColorPath(path));
+        msg = "Adding path in exclude dirs rc: ({})".format(ColorPath(path));
         Helper.print_verbose(msg);
 
         fullpath = Helper.expand_normalize_path(path);
@@ -369,7 +370,7 @@ class ExcludeDirRC:
 
         #Check if we already have this path included.
         #If included log and return.
-        grep_cmd = "grep -q \"{}\" \"{}\"".format(path, Constants.RC_FILE_PATH);
+        grep_cmd = "grep -q \"{}\" \"{}\"".format(fullpath, Constants.RC_FILE_PATH);
         ret = os.system(grep_cmd);
         if(ret == 0):
             msg = "Path ({}) is already added...".format(ColorPath(path));
@@ -377,17 +378,19 @@ class ExcludeDirRC:
             return;
 
         #Path is not included add it.
-        echo_cmd = "echo \"{}\" >> \"{}\"".format(path, Constants.RC_FILE_PATH);
+        echo_cmd = "echo \"{}\" >> \"{}\"".format(fullpath, Constants.RC_FILE_PATH);
         os.system(echo_cmd);
 
     @staticmethod
     def remove_path(path):
-        msg = "Removing path in exclude dirs rc:({})".format(ColorPath(path));
+        msg = "Removing path in exclude dirs rc: ({})".format(ColorPath(path));
         Helper.print_verbose(msg);
+
+        fullpath = Helper.expand_normalize_path(path);
 
         #Check if we already have this path included.
         #If not included log and fail.
-        grep_cmd = "grep -q \"{}\" \"{}\"".format(path, Constants.RC_FILE_PATH);
+        grep_cmd = "grep -q \"{}\" \"{}\"".format(fullpath, Constants.RC_FILE_PATH);
 
         ret = os.system(grep_cmd);
         if(ret != 0):
@@ -398,7 +401,7 @@ class ExcludeDirRC:
         #Path included, so grep the inverse to a temp file
         #move the temp over the original one.
         cmd = "grep -v \"{search}\" \"{original}\" > \"{temp}.temp\"";
-        grep_inv_cmd = cmd.format(search   = path,
+        grep_inv_cmd = cmd.format(search   = fullpath,
                                   original = Constants.RC_FILE_PATH,
                                   temp     = Constants.RC_FILE_PATH);
         os.system(grep_inv_cmd);
@@ -428,18 +431,24 @@ class TagEntry:
 ## Scan/Parse Functions                                                       ##
 ################################################################################
 def scan(start_path):
+    #Check if start path is valid.
+    start_path = Helper.expand_normalize_path(start_path);
+    if(not os.path.isdir(start_path)):
+        Helper.print_fatal("{} ({})".format(
+            "start path is not valid directory - ",
+            ColorPath(start_path)));
+
     ## Scan the directories.
     for root, dirs, files in os.walk(start_path, topdown=True):
 
         #Check if current root path is in our exclude list of if it is hidden.
-        is_in_exclude_list = os.path.abspath(root) in Globals.exclude_dirs;
+        is_in_exclude_list = Helper.expand_normalize_path(root) in Globals.exclude_dirs;
         is_hidden          = "." in os.path.split(root)[1] and len(root) != 1;
 
         if(is_in_exclude_list or is_hidden):
             #Log if verbose.
-            Helper.print_verbose(
-                Helper.colored("Ignoring:", Constants.COLOR_VERBOSE_IGNORE_TITLE),
-                Helper.colored(root, Constants.COLOR_VERBOSE_IGNORE_MSG));
+            Helper.print_verbose("{} ({})".format(ColorInfo("Ignoring:"),
+                                                  ColorPath(root)));
 
             #Remove the os.walk dirs.
             dirs[:] = [];
@@ -452,8 +461,9 @@ def scan(start_path):
 
             continue; #Skip the rest of for block.
 
-        Helper.print_verbose(Helper.colored("Scanning:", Constants.COLOR_VERBOSE_TITLE),
-                             Helper.colored(root, Constants.COLOR_VERBOSE_MSG));
+
+        Helper.print_verbose("{} ({})".format(ColorProcess("Scanning:"),
+                                              ColorPath(root)));
 
         #For each file check if it matches with our file extensions.
         for file in files:
@@ -461,15 +471,14 @@ def scan(start_path):
             if(file == Globals.this_file_name):
                 continue;
 
-            for ext in Globals.extensions:
-                #Get the filename and its extension.
-                filename, fileext = os.path.splitext(file);
-                #Extension matches.
-                if(fileext == ext):
-                    Helper.print_verbose(
-                             Helper.colored("\tParsing:", Constants.COLOR_VERBOSE_TITLE),
-                             Helper.colored(file, Constants.COLOR_VERBOSE_MSG));
+            #Get the filename and its extension.
+            filename, fileext = os.path.splitext(file);
 
+            #Check if the fileext is in our extensions list.
+            for ext in Globals.extensions:
+                if(fileext == ext):
+                    Helper.print_verbose("  {} ({})".format(ColorProcess("Parsing"),
+                                                            ColorFile(file)));
                     #Parse the file to get all tags.
                     parse(os.path.join(root, file));
 
@@ -479,6 +488,7 @@ def parse(filename):
 
     #Open the file and get the lines.
     lines = open(filename).readlines();
+
     #For all lines.
     for line_no in xrange(0, len(lines)):
         line = lines[line_no];
@@ -532,8 +542,7 @@ def output_long():
 
         #Print the Tag name and count of files with it.
         out = "{} - Files({})";
-        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG),
-                         Helper.colored(tag_entry_list_len, Constants.COLOR_NUMBER));
+        out = out.format(ColorTag(tag_name), ColorNumber(tag_entry_list_len));
         print out;
 
         #For each entry for this tag.
@@ -543,8 +552,8 @@ def output_long():
 
             #Print the file name and the count of issues.
             out = "{} - Issues({}):";
-            out = out.format(Helper.colored(entry.filename, Constants.COLOR_FILE),
-                             Helper.colored(entry_data_len, Constants.COLOR_NUMBER));
+            out = out.format(ColorFile(entry.filename),
+                             ColorNumber(entry_data_len));
             print out;
 
             digits_on_greater_entry_no =  len(str(entry_data[-1][0]));
@@ -564,8 +573,8 @@ def output_long():
                 entry_issue = entry_issue.replace("\n", "\n" + spacing_chars + padding)
 
                 #Put colors.
-                colored_entry_no    = Helper.colored(entry_no,    Constants.COLOR_NUMBER);
-                colored_entry_issue = Helper.colored(entry_issue, Constants.COLOR_ISSUE);
+                colored_entry_no    = ColorNumber(entry_no);
+                colored_entry_issue = ColorIssue(entry_issue);
 
                 out = "{}({}) {}";
                 out = out.format(spacing_chars,
@@ -585,8 +594,7 @@ def output_short():
 
         #Print the Tag name and count of files with it.
         out = "{} - Files({})";
-        out = out.format(Helper.colored(tag_name, Constants.COLOR_TAG),
-                         Helper.colored(tag_entry_list_len, Constants.COLOR_NUMBER));
+        out = out.format(ColorTag(tag_name), ColorNumber(tag_entry_list_len));
         print out;
 
         #For each entry for this tag.
@@ -609,9 +617,9 @@ def output_short():
                 entry_issue = entry_issue.replace("\n", "\n" + entry_issue_offset);
 
                 #Print the line of issue and its message.
-                colored_entry_file  = Helper.colored(entry_file,  Constants.COLOR_FILE);
-                colored_entry_no    = Helper.colored(entry_no,    Constants.COLOR_NUMBER);
-                colored_entry_issue = Helper.colored(entry_issue, Constants.COLOR_ISSUE);
+                colored_entry_file  = ColorFile(entry_file);
+                colored_entry_no    = ColorNumber(entry_no);
+                colored_entry_issue = ColorIssue(entry_issue);
 
                 out = "{}({}) {}";
                 out = out.format(colored_entry_file,
@@ -631,97 +639,72 @@ def main():
                                 Constants.FLAGS_LONG);
 
     #Options switches.
-    help_resquested              = False;
-    version_requested            = False;
-    long_requested               = False;
-    short_requested              = False;
-    verbose_requested            = False;
-    no_colors_requested          = False;
-    list_exclude_paths_requested = False;
+    long_requested      = False;
+    short_requested     = False;
 
     #Parse the options.
     for option in options[0]:
         key, value = option;
         key = key.lstrip("-");
 
-        #Check if flags are present.
-        #Help.
+        #Help / Version / List exclude dirs - Exclusives.
         if(key in Constants.FLAG_HELP):
-            help_resquested = True;
-        #Version.
+            Helper.print_help(0);
         elif(key in Constants.FLAG_VERSION):
-            version_requested = True;
-        #Long output.
-        elif(key in Constants.FLAG_LONG):
-            long_requested = True;
-        #Short output.
-        elif(key in Constants.FLAG_SHORT):
-            short_requested = True;
-        #Verbose.
-        elif(key in Constants.FLAG_VERBOSE):
-            verbose_requested = True;
-        #No Colors.
-        elif(key in Constants.FLAG_NO_COLORS):
-            no_colors_requested = True;
-        #Exclude dir.
-        elif(key in Constants.FLAG_EXCLUDE):
-            #COWTODO: If not a valid path exit.
-            path = Helper.expand_normalize_path(value);
-            if(os.path.isdir(path)):
-                Globals.exclude_dirs.append(path);
-        #List exclude dirs in rc.
+            Helper.print_version(0);
         elif(key in Constants.FLAG_LIST_EXCLUDE_DIR):
-            list_exclude_paths_requested = True;
-        #Add the dir to exclude rc.
+            ExcludeDirRC.print_list();
+            exit(0);
+
+        #Long / Short output - Optionals.
+        elif(key in Constants.FLAG_LONG  ): long_requested = True;
+        elif(key in Constants.FLAG_SHORT ): short_requested = True;
+
+        #Verbose / No Colors - Optionals.
+        elif(key in Constants.FLAG_VERBOSE):
+            Globals.verbose = True;
+        elif(key in Constants.FLAG_NO_COLORS):
+            ColorMode.mode = ColorMode.NEVER;
+
+        #Exclude dir - Optional
+        elif(key in Constants.FLAG_EXCLUDE):
+            path = Helper.expand_normalize_path(value);
+            if(not os.path.isdir(path)):
+                msg = "Path to exclude is invalid ({})";
+                Helper.print_fatal(msg.format(ColorPath(path)));
+            Globals.exclude_dirs.append(path);
+
+        #Add / Remove the dir to exclude rc - Optionals
+        #Error checking about paths will be done when adding the paths.
         elif(key in Constants.FLAG_ADD_EXCLUDE_DIR):
-            #Error checking about paths will be done when adding the paths.
-            path = Helper.expand_normalize_path(value);
-            Globals.paths_to_add_in_exclude_rc.append(path);
-        #Remove the dir in exclude rc.
+            Globals.paths_to_add_in_exclude_rc.append(value);
         elif(key in Constants.FLAG_REMOVE_EXCLUDE_DIR):
-            #Error checking about paths will be done when removing the paths.
-            path = Helper.expand_normalize_path(value);
-            Globals.paths_to_remove_in_exclude_rc.append(path);
+            Globals.paths_to_remove_in_exclude_rc.append(value);
 
-    #Check if the exclusive operations are requested.
-    if(help_resquested):
-        Helper.print_help();
-        Helper.exit(0);
-    if(version_requested):
-        Helper.print_version();
-        Helper.exit(0);
-    if(list_exclude_paths_requested):
-        ExcludeDirRC().print_list();
-        Helper.exit(0);
-
-    #Set the verbose | no colors flag.
-    Globals.verbose = verbose_requested;
-    Globals.colors  = not no_colors_requested;
 
     #Add/Remove all paths to/from rc before start the run.
-    rc = ExcludeDirRC();
     for path in Globals.paths_to_add_in_exclude_rc:
-        rc.add_path(path);
+        ExcludeDirRC.add_path(path);
     for path in Globals.paths_to_remove_in_exclude_rc:
-        rc.remove_path(path);
+        ExcludeDirRC.remove_path(path);
 
     #Add all the Excluded paths in rc to the list of excluded paths.
-    Globals.exclude_dirs += rc.get_excluded_dirs();
+    Globals.exclude_dirs += ExcludeDirRC.get_excluded_dirs();
 
     #Set the output function based upon the flag.
-    output_f = output_long;
-    if(short_requested): output_f = output_short;
-    if(long_requested):  output_f = output_long;
+    output_func = output_long;
+    if(short_requested ): output_func = output_short;
+    if(long_requested  ): output_func = output_long;
 
     #Check if the path is present.
     path = ".";
     if(len(options[1]) > 0):
         path = options[1][0];
 
-    # Do a scan and present the results.
+    #Do a scan and present the results.
     scan(path);
     Helper.print_verbose("\n\n");
-    output_f();
+    output_func();
 
 if(__name__ == "__main__"):
     main();
