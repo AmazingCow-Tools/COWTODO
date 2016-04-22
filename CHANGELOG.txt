@@ -1,9 +1,60 @@
+================================================================================
+| Version 0.3.x                                                                |
+================================================================================
+version 0.3.0 - April 22, 2016
+-- General --
+    - Starting using the cowtermcolor package for coloring.
+    - More error checking.
+    - cowtodo is more aware of relative paths.
+    - Make the search of extensions more efficient.
+    - Make the code more cleaner.
+
+-- Source --
+    cowtodo.py
+    - Put the getopt into a try clause to handle the errors.
+    - Remove the unneeded color var in Globals class.
+    - Update the signature print_help and print_version in Helper.
+    - ExcludeDirsRC add and remove path are now aware of relative paths.
+    - Add path error checking in scan function.
+    - scan function is now aware of relative paths.
+    - Update the coloring function calls.
+    - Remove the unneeded Color objects.
+    - Make the search of extensions more efficient.
+      Now it will split the file path and extension only once.
+    - Rewrite and clean the command line parsing.
+    - Rename some vars to better clarity.
+    - Sort the imports.
+    - Add the import guard for cowtermcolor.
+    - Add the color objects.
+    - Remove the old constants from Constants class.
+    - Update the version.
+    - Remove the colored function - Will be replaced by color objects.
+    - Add a wrapper into exit().
+    - Rewrite the ExcludeDirRC
+      Now the methods are static.
+      Update the output messages colors.
+      Update the output messages.
+    - Make some cosmetic changes.
+
+-- Info Files --
+    CHANGELOG
+    - Update the changelog format.
+    README
+    - Update the README to consistency with other AmazingCow's READMEs.
+
+
+================================================================================
+| Version 0.2.x                                                                |
+================================================================================
 version 0.2.0:
 [Apr 6 2016] - Make the COWTODO understand the \ char - Now multiline comments
                are supported :D
                Reverse the order of CHANGELOG - Now the last change appears on
                top of file (this is much more logical than the way before).
 
+
+================================================================================
+| Version 0.1.x                                                                |
 ================================================================================
 version 0.1.7:
 [Jan 1 2016] - Make the termcolor package a non requirement.
