@@ -140,6 +140,7 @@ class Constants:
 class Globals:
     extensions = [ ".h"   , ".c",   #C
                    ".cpp" , ".cc",  #C++
+                   ".cs",           #C#
                    ".html", ".htm", #HTML
                    ".js"  , ".jsx", #Javascript
                    ".md",           #Markdown
@@ -443,7 +444,7 @@ def scan(start_path):
 
         #Check if current root path is in our exclude list of if it is hidden.
         is_in_exclude_list = Helper.expand_normalize_path(root) in Globals.exclude_dirs;
-        is_hidden          = "." in os.path.split(root)[1] and len(root) != 1;
+        is_hidden          = os.path.split(root)[1][0] == "." and len(root) != 1;
 
         if(is_in_exclude_list or is_hidden):
             #Log if verbose.
