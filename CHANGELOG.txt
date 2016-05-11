@@ -1,6 +1,16 @@
 ================================================================================
 | Version 0.3.x                                                                |
 ================================================================================
+version 0.3.1 - May 11, 2016
+-- General --
+    - [BUGFIX] Fix the bug that prevent paths with dots to be scanned.
+    - Add the C# extension.
+-- Source --
+    cowtodo.py
+    - [BUGFIX] Fix the bug that prevent paths with dots to be scanned.
+    - Add the C# extension.
+
+--------------------------------------------------------------------------------
 version 0.3.0 - April 22, 2016
 -- General --
     - Starting using the cowtermcolor package for coloring.
