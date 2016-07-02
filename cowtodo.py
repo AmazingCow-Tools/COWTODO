@@ -99,7 +99,7 @@ ColorTag                = Color(RED);
 class Constants:
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.3.0";
+    APP_VERSION   = "0.3.2";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015, 2016 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -295,6 +295,8 @@ Notes:
 class ExcludeDirRC:
     @staticmethod
     def get_excluded_dirs():
+        ExcludeDirRC.check_dir_and_file();
+
         lines = open(Constants.RC_FILE_PATH).readlines();
         return map(lambda x: x.replace("\n", ""), lines);
 
@@ -324,6 +326,8 @@ class ExcludeDirRC:
 
     @staticmethod
     def verify_paths():
+        ExcludeDirRC.check_dir_and_file();
+
         #Get all paths and check if them refer to a directory.
         invalid_paths = [];
         line = 1;
@@ -348,6 +352,8 @@ class ExcludeDirRC:
 
     @staticmethod
     def print_list():
+        ExcludeDirRC.check_dir_and_file();
+
         print "Excluded dirs - (Will be ignored in all cowtodo calls):";
 
         lines = ExcludeDirRC.get_excluded_dirs();
@@ -360,6 +366,8 @@ class ExcludeDirRC:
 
     @staticmethod
     def add_path(path):
+        ExcludeDirRC.check_dir_and_file();
+
         msg = "Adding path in exclude dirs rc: ({})".format(ColorPath(path));
         Helper.print_verbose(msg);
 
@@ -384,6 +392,8 @@ class ExcludeDirRC:
 
     @staticmethod
     def remove_path(path):
+        ExcludeDirRC.check_dir_and_file();
+
         msg = "Removing path in exclude dirs rc: ({})".format(ColorPath(path));
         Helper.print_verbose(msg);
 
@@ -507,9 +517,10 @@ def parse(filename):
                 #Or the end of file is reached.
                 while(True):
                     clean_line += Helper.clean_str(line, tag_name);
-
-                    #End of file or line not ending with \ backslash
-                    if(line_no >= len(lines) or line[-2] != "\\"):
+                    #End of file OR
+                    #empty (Just a new line) OR
+                    ## line not ending with \ backslash
+                    if(line_no >= len(lines) or len(line) < 2 or line[-2] != "\\"):
                         break;
 
                     line_no += 1;

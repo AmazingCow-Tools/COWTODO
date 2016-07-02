@@ -1,6 +1,14 @@
 ================================================================================
 | Version 0.3.x                                                                |
 ================================================================================
+vesrion 0.3.2 - Jul 2, 2016
+-- General --
+    - [BUGFIX] COWTODO was not creating the needed rc files.
+    - [BUGFIX] If a comment ended with \ char is followed by
+               an empty string was causing crashes.
+    - Fix the version number, it was outdated...
+
+--------------------------------------------------------------------------------
 version 0.3.1 - May 11, 2016
 -- General --
     - [BUGFIX] Fix the bug that prevent paths with dots to be scanned.
