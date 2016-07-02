@@ -99,7 +99,7 @@ ColorTag                = Color(RED);
 class Constants:
     #App
     APP_NAME      = "cowtodo";
-    APP_VERSION   = "0.3.2";
+    APP_VERSION   = "0.4.0";
     APP_AUTHOR    = "N2OMatt <n2omatt@amazingcow.com>"
     APP_COPYRIGHT = "\n".join(("Copyright (c) 2015, 2016 - Amazing Cow",
                                "This is a free software (GPLv3) - Share/Hack it",
@@ -113,17 +113,19 @@ class Constants:
     FLAG_VERBOSE            = "V", "verbose";
     FLAG_NO_COLORS          =  "", "no-colors";
     FLAG_EXCLUDE            = "e", "exclude";
+    FLAG_EXCLUDE_EXT        = "E", "exclude-ext";
     FLAG_ADD_EXCLUDE_DIR    =  "", "add-exclude-dir";
     FLAG_REMOVE_EXCLUDE_DIR =  "", "remove-exclude-dir";
     FLAG_LIST_EXCLUDE_DIR   =  "", "list-exclude-dir";
 
-    FLAGS_SHORT = "hvslVe:";
+    FLAGS_SHORT = "hvslVe:E:";
     FLAGS_LONG  = ["help",
                    "version",
                    "short",
                    "long",
                    "verbose",
                    "no-colors",
+                   "exclude-ext=",
                    "exclude=",
                    "add-exclude-dir=",
                    "remove-exclude-dir=",
@@ -687,6 +689,15 @@ def main():
                 msg = "Path to exclude is invalid ({})";
                 Helper.print_fatal(msg.format(ColorPath(path)));
             Globals.exclude_dirs.append(path);
+
+        #Exclude ext - Optional
+        elif(key in Constants.FLAG_EXCLUDE_EXT):
+            if(value[0] != "."):
+                value = "." + value;
+            if(Globals.extensions.count(value) == 0):
+                msg = "Extension not recognized: ({})".format(ColorInfo(value));
+                Helper.print_fatal(msg);
+            Globals.extensions.remove(value);
 
         #Add / Remove the dir to exclude rc - Optionals
         #Error checking about paths will be done when adding the paths.
