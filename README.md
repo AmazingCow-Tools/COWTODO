@@ -68,7 +68,7 @@ languages that it supports.
 * PHP          - ``` .php```             
 * Python       - ```  .py```             
 * Shell Script - ```  .sh```             
-
+* Action Script - ```  .as```             
 
 <br>
 
@@ -82,7 +82,7 @@ As usual, you are **very welcomed** to **share** and **hack** it.
 
 ``` 
 Usage:
-  cowtodo [-hv] [-sl] [-e <path>] <search_path>
+  cowtodo [-hv] [-sl] [-e <path>] [-t <tag>] <search_path>
   cowtodo [--list-exclude-dir]
   cowtodo [--add-exclude-dir|remove-exclude-dir] <path>
 
@@ -94,6 +94,7 @@ Options:
   -V --verbose        : Verbose mode, helps to see what it's doing.
      --no-colors      : Make the output uncolored.
   -e --exclude <path> : Exclude the path from scan.
+  -t --tag     <tag>  : Set specifics tags to add or exclude from search.
 
  *--list-exclude-dir          : List all exclude path in (RC_PATH).
   --add-exclude-dir    <path> : Add exclude path to (RC_PATH).
@@ -104,6 +105,10 @@ Notes:
   Multiple --exclude <path> can be used.
   Multiple --add-exclude-dir <path> can be used.
   Multiple --remove-exclude-dir <path> can be used.
+
+  If any tags are set the default is all tags.
+  To specify a tag to exclude prefix it with '~' char.
+  Example: cowtodo -t ~COWTODO #Will exclude COWTODO from search.
 
   Options marked with * are exclusive, i.e. the cowtodo will run that
   and exit successfully after the operation.
