@@ -117,19 +117,38 @@ class Constants:
     FLAG_ADD_EXCLUDE_DIR    =  "", "add-exclude-dir";
     FLAG_REMOVE_EXCLUDE_DIR =  "", "remove-exclude-dir";
     FLAG_LIST_EXCLUDE_DIR   =  "", "list-exclude-dir";
+    FLAG_TAG                = "t", "tag";
 
-    FLAGS_SHORT = "hvslVe:E:";
-    FLAGS_LONG  = ["help",
-                   "version",
-                   "short",
-                   "long",
-                   "verbose",
-                   "no-colors",
-                   "exclude-ext=",
-                   "exclude=",
-                   "add-exclude-dir=",
-                   "remove-exclude-dir=",
-                   "list-exclude-dir"];
+    FLAGS_SHORT = "".join([
+        FLAG_HELP              [0]      ,
+        FLAG_VERSION           [0]      ,
+        FLAG_SHORT             [0]      ,
+        FLAG_LONG              [0]      ,
+        FLAG_VERBOSE           [0]      ,
+        FLAG_NO_COLORS         [0]      ,
+        FLAG_EXCLUDE           [0] + ":",
+        FLAG_EXCLUDE_EXT       [0] + ":",
+        FLAG_ADD_EXCLUDE_DIR   [0]      ,
+        FLAG_REMOVE_EXCLUDE_DIR[0]      ,
+        FLAG_LIST_EXCLUDE_DIR  [0]      ,
+        FLAG_TAG               [0] + ":"
+    ]);
+
+    FLAGS_LONG = [
+        FLAG_HELP              [1]      ,
+        FLAG_VERSION           [1]      ,
+        FLAG_SHORT             [1]      ,
+        FLAG_LONG              [1]      ,
+        FLAG_VERBOSE           [1]      ,
+        FLAG_NO_COLORS         [1]      ,
+        FLAG_EXCLUDE           [1] + "=",
+        FLAG_EXCLUDE_EXT       [1] + "=",
+        FLAG_ADD_EXCLUDE_DIR   [1] + "=",
+        FLAG_REMOVE_EXCLUDE_DIR[1] + "=",
+        FLAG_LIST_EXCLUDE_DIR  [1]      ,
+        FLAG_TAG               [1] + "="
+    ];
+
 
     #Exclude Dir RC Paths.
     RC_DIR_PATH  = os.path.expanduser("~/.cowtodorc");
@@ -170,6 +189,9 @@ class Globals:
     exclude_dirs                  = [];
     paths_to_add_in_exclude_rc    = [];
     paths_to_remove_in_exclude_rc = [];
+
+    tags_to_search  = [];
+    tags_to_exclude = [];
 
 
 ################################################################################
@@ -508,6 +530,18 @@ def parse(filename):
 
         #Iterate for all of our tags in this line.
         for tag_name in Globals.tag_names:
+
+            #This current Tag in in the exclude list.
+            #   We don't need keep any track of it.
+            if(tag_name in Globals.tags_to_exclude):
+                continue;
+
+            #If user didn't set any tags to search, means that he wants to
+            #search every tag, so we don't do nothing in this case.
+            #But if it set any tag, means that ONLY that tag should be tracked.
+            if(len(Globals.tags_to_search) != 0 and tag_name not in Globals.tags_to_search):
+                continue;
+
             search_str = ".*%s.*" %(tag_name); #Build a regex.
 
             #Check if any tag was found.
@@ -705,6 +739,13 @@ def main():
             Globals.paths_to_add_in_exclude_rc.append(value);
         elif(key in Constants.FLAG_REMOVE_EXCLUDE_DIR):
             Globals.paths_to_remove_in_exclude_rc.append(value);
+
+        #Tag - Optional
+        elif(key in Constants.FLAG_TAG):
+            if(value[0] == "~"):
+                Globals.tags_to_exclude.append(value[1:]);
+            else:
+                Globals.tags_to_search.append(value);
 
 
     #Add/Remove all paths to/from rc before start the run.
