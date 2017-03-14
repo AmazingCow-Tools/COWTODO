@@ -169,6 +169,7 @@ class Globals:
                    ".php" ,         #PHP
                    ".py"  ,         #Python
                    ".sh"            #Shell Script.
+                   ".as"  ,         #Actions Script 3.
                 ];
 
     tag_names = [ "COWTODO",
@@ -689,8 +690,8 @@ def main():
         Helper.print_fatal(e);
 
     #Options switches.
-    long_requested      = False;
-    short_requested     = False;
+    long_requested  = False;
+    short_requested = False;
 
     #Parse the options.
     for option in options[0]:
