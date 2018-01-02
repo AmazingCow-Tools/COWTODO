@@ -43,11 +43,14 @@ import time;
 ## 'nice' error screen describing the error and how to fix it.                ##
 ################################################################################
 def __import_error_message_print(pkg_name, pkg_url):
-    print "Sorry, "
-    print "cowtodo depends on {} package.".format(pkg_name);
-    print "Visit {} to get it.".format(pkg_url);
-    print "Or checkout the README.md to learn other ways to install {}.".format(pkg_name);
-    Helper.exit(1);
+    print """Sorry,
+    cowtodo depends on {0} package
+    Visit ({1}) to get it.
+    Or checkout the README.md to learn other ways to install {0}.""".format(
+        pkg_name,
+        pkg_url
+    );
+    exit(1);
 
 
 ## cowtermcolor ##
@@ -56,7 +59,8 @@ try:
 except ImportError, e:
     __import_error_message_print(
         "cowtermcolor",
-        "http//opensource.amazingcow.com/cowtermcolor.html");
+        "https://github.com/AmazingCow-Libs/cowtermcolor_py"
+    );
 
 
 ################################################################################
